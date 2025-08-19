@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Demo - {{ config.business.name }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <div class="max-w-4xl mx-auto">
+            <!-- Header -->
+            <div class="text-center mb-8">
+                <h1 class="text-4xl font-bold text-gray-900 mb-4">{{ config.business.name }}</h1>
+                <p class="text-xl text-gray-600 mb-2">Demo del Asistente Virtual</p>
+                <p class="text-gray-500">Prueba nuestro bot de atención al cliente</p>
+            </div>
+            
+            <!-- Business Info Card -->
+            <div class="bg-white rounded-xl shadow-lg p-8 mb-8">
+                <div class="grid md:grid-cols-2 gap-8">
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-800 mb-4">Información</h2>
+                        
+                        {% if config.business.address %}
+                        <div class="flex items-center mb-3">
+                            <span class="text-2xl mr-3">📍</span>
+                            <div>
+                                <p class="font-semibold">Ubicación</p>
+                                <p class="text-gray-600">{{ config.business.address }}</p>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        {% if config.business.phone %}
+                        <div class="flex items-center mb-3">
+                            <span class="text-2xl mr-3">📞</span>
+                            <div>
+                                <p class="font-semibold">Teléfono</p>
+                                <p class="text-gray-600">{{ config.business.phone }}</p>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        {% if config.business.email %}
+                        <div class="flex items-center mb-3">
+                            <span class="text-2xl mr-3">📧</span>
+                            <div>
+                                <p class="font-semibold">Email</p>
+                                <p class="text-gray-600">{{ config.business.email }}</p>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div>
+                        <h3 class="text-xl font-bold text-gray-800 mb-4">🕒 Horarios</h3>
+                        {% if config.business.hours %}
+                            {% for day, hours in config.business.hours.items() %}
+                            <div class="flex justify-between mb-2">
+                                <span class="text-gray-600">{{ day.replace('_', ' ').title() }}:</span>
+                                <span class="font-medium">{{ hours }}</span>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <p class="text-gray-500">Horarios no configurados</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Demo Instructions -->
+            <div class="bg-white rounded-xl shadow-lg p-8 mb-8">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">¿Cómo Probar el Bot?</h2>
+                
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div>
+                        <h3 class="font-semibold text-gray-800 mb-3">💡 Prueba Estas Preguntas:</h3>
+                        <ul class="space-y-2 text-gray-600">
+                            <li>• "¿Cuáles son sus horarios?"</li>
+                            <li>• "¿Qué tienen en el menú?"</li>
+                            <li>• "¿Dónde están ubicados?"</li>
+                            <li>• "Quiero hacer un pedido"</li>
+                            <li>• "¿Cómo puedo pagar?"</li>
+                        </ul>
+                    </div>
+                    
+                    <div>
+                        <h3 class="font-semibold text-gray-800 mb-3">🎯 Funcionalidades:</h3>
+                        <ul class="space-y-2 text-gray-600">
+                            <li>• Respuestas automáticas a FAQs</li>
+                            <li>• Mostrar menú y precios</li>
+                            <li>• Tomar pedidos paso a paso</li>
+                            <li>• Información de contacto</li>
+                            <li>• Respuestas rápidas sugeridas</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="mt-6 p-4 bg-blue-50 rounded-lg">
+                    <p class="text-blue-800 text-sm">
+                        💡 <strong>Tip:</strong> Haz clic en el botón de chat azul en la esquina inferior derecha para comenzar una conversación.
+                    </p>
+                </div>
+            </div>
+            
+            <!-- Integration Code -->
+            <div class="bg-white rounded-xl shadow-lg p-8">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">🔗 Integrar en tu Sitio Web</h2>
+                <p class="text-gray-600 mb-4">Copia y pega este código en tu sitio web para agregar el chat:</p>
+                
+                <div class="bg-gray-900 text-green-400 p-4 rounded-lg font-mono text-sm overflow-x-auto">
+                    <code>&lt;script src="{{ request.url.scheme }}://{{ request.url.netloc }}/widget/widget.js" defer&gt;&lt;/script&gt;<br>
+&lt;div id="ai-bot" data-business="{{ config.business.name }}"&gt;&lt;/div&gt;</code>
+                </div>
+                
+                <button onclick="copyCode()" class="mt-4 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+                    📋 Copiar Código
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Load the actual widget -->
+    <script src="/widget/widget.js" defer></script>
+    
+    <script>
+        function copyCode() {
+            const code = `<script src="${window.location.origin}/widget/widget.js" defer></script>
+<div id="ai-bot" data-business="{{ config.business.name }}"></div>`;
+            
+            navigator.clipboard.writeText(code).then(() => {
+                alert('¡Código copiado al portapapeles!');
+            }).catch(() => {
+                // Fallback for older browsers
+                const textArea = document.createElement('textarea');
+                textArea.value = code;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                alert('¡Código copiado al portapapeles!');
+            });
+        }
+    </script>
+</body>
+</html>

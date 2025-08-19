@@ -1,0 +1,195 @@
+{% extends "base.html" %}
+
+{% block title %}Base de Conocimiento{% endblock %}
+
+{% block content %}
+<div class="mb-8">
+    <h1 class="text-3xl font-bold text-gray-900 mb-2">Base de Conocimiento</h1>
+    <p class="text-gray-600">Gestiona FAQs y documentos para entrenar tu asistente virtual</p>
+</div>
+
+<!-- Quick Actions -->
+<div class="bg-white p-6 rounded-xl shadow-sm mb-8">
+    <div class="flex flex-wrap gap-4">
+        <button onclick="document.getElementById('upload-csv').click()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+            📤 Subir CSV de FAQs
+        </button>
+        
+        <button onclick="rebuildIndex()" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">
+            🔄 Re-indexar Base de Conocimiento
+        </button>
+        
+        <button onclick="exportFAQs()" class="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700">
+            💾 Exportar FAQs
+        </button>
+    </div>
+    
+    <!-- Hidden file input -->
+    <form action="/admin/knowledge/upload-csv" method="post" enctype="multipart/form-data" style="display: none;">
+        <input type="file" id="upload-csv" name="file" accept=".csv" onchange="this.form.submit()">
+    </form>
+</div>
+
+<!-- FAQs Section -->
+<div class="bg-white rounded-xl shadow-sm mb-8">
+    <div class="p-6 border-b">
+        <h2 class="text-xl font-bold text-gray-800">📋 Preguntas Frecuentes</h2>
+        <p class="text-gray-600">{{ faqs|length }} FAQs cargadas</p>
+    </div>
+    
+    <div class="p-6">
+        {% if faqs %}
+        <div class="overflow-x-auto">
+            <table class="w-full table-auto">
+                <thead>
+                    <tr class="border-b">
+                        <th class="text-left py-3 px-4">Pregunta</th>
+                        <th class="text-left py-3 px-4">Respuesta</th>
+                        <th class="text-left py-3 px-4">Tags</th>
+                        <th class="text-left py-3 px-4">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for faq in faqs %}
+                    <tr class="border-b hover:bg-gray-50">
+                        <td class="py-3 px-4 font-medium">{{ faq.question[:50] }}{{ '...' if faq.question|length > 50 else '' }}</td>
+                        <td class="py-3 px-4 text-gray-600">{{ faq.answer[:50] }}{{ '...' if faq.answer|length > 50 else '' }}</td>
+                        <td class="py-3 px-4">
+                            {% if faq.tags %}
+                                {% for tag in faq.tags.split(',') %}
+                                <span class="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded mr-1">{{ tag.strip() }}</span>
+                                {% endfor %}
+                            {% endif %}
+                        </td>
+                        <td class="py-3 px-4">
+                            <button onclick="editFAQ({{ faq.id }})" class="text-blue-600 hover:underline text-sm mr-2">Editar</button>
+                            <button onclick="deleteFAQ({{ faq.id }})" class="text-red-600 hover:underline text-sm">Eliminar</button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-12">
+            <div class="text-6xl mb-4">📝</div>
+            <h3 class="text-lg font-medium text-gray-900 mb-2">No hay FAQs configuradas</h3>
+            <p class="text-gray-600 mb-4">Sube un archivo CSV con tus preguntas frecuentes para comenzar</p>
+            
+            <div class="bg-gray-50 p-4 rounded-lg text-left max-w-md mx-auto">
+                <p class="font-semibold mb-2">Formato CSV esperado:</p>
+                <code class="text-sm">question,answer,tags<br>
+                "¿Horarios?","8am-6pm","horarios"<br>
+                "¿Ubicación?","Calle X","ubicacion"</code>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Documents Section -->
+<div class="bg-white rounded-xl shadow-sm">
+    <div class="p-6 border-b">
+        <h2 class="text-xl font-bold text-gray-800">📄 Documentos</h2>
+        <p class="text-gray-600">Documentos adicionales para la base de conocimiento</p>
+    </div>
+    
+    <div class="p-6">
+        {% if docs %}
+        <div class="grid gap-4">
+            {% for doc in docs %}
+            <div class="border border-gray-200 rounded-lg p-4">
+                <div class="flex justify-between items-start">
+                    <div class="flex-1">
+                        <h4 class="font-medium text-gray-900">{{ doc.title }}</h4>
+                        <p class="text-sm text-gray-600 mt-1">{{ doc.file_type.upper() }} • {{ doc.file_path }}</p>
+                        {% if doc.content_preview %}
+                        <p class="text-sm text-gray-500 mt-2">{{ doc.content_preview[:100] }}...</p>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="flex items-center space-x-2">
+                        {% if doc.indexed %}
+                        <span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded">Indexado</span>
+                        {% else %}
+                        <span class="bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded">Pendiente</span>
+                        {% endif %}
+                        
+                        <button onclick="deleteDoc({{ doc.id }})" class="text-red-600 hover:underline text-sm">Eliminar</button>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center py-8">
+            <div class="text-4xl mb-3">📁</div>
+            <p class="text-gray-600">No hay documentos adicionales cargados</p>
+            <p class="text-sm text-gray-500 mt-2">Coloca archivos PDF, TXT o MD en la carpeta data/docs/</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+async function rebuildIndex() {
+    if (confirm('¿Re-construir el índice de búsqueda? Esto puede tomar unos minutos.')) {
+        const button = event.target;
+        const originalText = button.textContent;
+        
+        button.textContent = '🔄 Procesando...';
+        button.disabled = true;
+        
+        try {
+            const response = await fetch('/admin/rebuild-index', { method: 'POST' });
+            if (response.ok) {
+                location.reload();
+            } else {
+                alert('Error al reconstruir el índice');
+            }
+        } catch (error) {
+            alert('Error: ' + error.message);
+        } finally {
+            button.textContent = originalText;
+            button.disabled = false;
+        }
+    }
+}
+
+function editFAQ(id) {
+    // Simple implementation - could be enhanced with a modal
+    const newQuestion = prompt('Nueva pregunta:');
+    if (newQuestion) {
+        const newAnswer = prompt('Nueva respuesta:');
+        if (newAnswer) {
+            // API call to update FAQ
+            fetch(`/api/faqs/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ question: newQuestion, answer: newAnswer })
+            }).then(() => location.reload());
+        }
+    }
+}
+
+async function deleteFAQ(id) {
+    if (confirm('¿Eliminar esta FAQ?')) {
+        try {
+            const response = await fetch(`/api/faqs/${id}`, { method: 'DELETE' });
+            if (response.ok) {
+                location.reload();
+            } else {
+                alert('Error al eliminar');
+            }
+        } catch (error) {
+            alert('Error: ' + error.message);
+        }
+    }
+}
+
+function exportFAQs() {
+    // Simple CSV export
+    window.location.href = '/api/faqs/export';
+}
+</script>
+{% endblock %}

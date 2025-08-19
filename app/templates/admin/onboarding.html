@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+
+{% block title %}Configuración Inicial - {{ config.business.name }}{% endblock %}
+
+{% block content %}
+<div class="mb-8">
+    <h1 class="text-3xl font-bold text-gray-900 mb-2">Configuración Inicial</h1>
+    <p class="text-gray-600">Sigue estos pasos para configurar tu asistente virtual</p>
+</div>
+
+<div class="max-w-3xl">
+    <!-- Progress Bar -->
+    {% set completed_checks = checks.values() | select | list | length %}
+    {% set total_checks = checks.values() | list | length %}
+    {% set progress_percent = (completed_checks / total_checks * 100) | round %}
+    
+    <div class="mb-8">
+        <div class="flex justify-between text-sm text-gray-600 mb-2">
+            <span>Progreso de configuración</span>
+            <span>{{ completed_checks }}/{{ total_checks }} completado</span>
+        </div>
+        <div class="w-full bg-gray-200 rounded-full h-2">
+            <div class="bg-blue-600 h-2 rounded-full" style="width: {{ progress_percent }}%"></div>
+        </div>
+    </div>
+    
+    <!-- Checklist -->
+    <div class="space-y-4">
+        <!-- Step 1: Environment -->
+        <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 {{ 'border-green-500' if checks.env_file else 'border-gray-300' }}">
+            <div class="flex items-center mb-4">
+                <div class="text-2xl mr-3">{{ '✅' if checks.env_file else '⏳' }}</div>
+                <h3 class="text-lg font-semibold">1. Configurar Variables de Entorno</h3>
+            </div>
+            
+            {% if checks.env_file %}
+                <p class="text-green-600 mb-2">✓ Archivo .env configurado</p>
+            {% else %}
+                <p class="text-gray-600 mb-4">Copia el archivo .env.example a .env y configura tus API keys</p>
+                <div class="bg-gray-50 p-4 rounded font-mono text-sm">
+                    cp .env.example .env<br>
+                    # Luego edita .env con tus llaves
+                </div>
+            {% endif %}
+        </div>
+        
+        <!-- Step 2: Config -->
+        <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 {{ 'border-green-500' if checks.config_file else 'border-gray-300' }}">
+            <div class="flex items-center mb-4">
+                <div class="text-2xl mr-3">{{ '✅' if checks.config_file else '⏳' }}</div>
+                <h3 class="text-lg font-semibold">2. Configurar Información del Negocio</h3>
+            </div>
+            
+            {% if checks.config_file %}
+                <p class="text-green-600 mb-2">✓ Archivo config.yaml configurado</p>
+            {% else %}
+                <p class="text-gray-600 mb-4">Copia y personaliza la configuración de tu negocio</p>
+                <div class="bg-gray-50 p-4 rounded font-mono text-sm">
+                    cp config_example.yaml config.yaml<br>
+                    # Edita con info de tu negocio
+                </div>
+            {% endif %}
+        </div>
+        
+        <!-- Step 3: FAQs -->
+        <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 {{ 'border-green-500' if checks.faqs_data else 'border-gray-300' }}">
+            <div class="flex items-center mb-4">
+                <div class="text-2xl mr-3">{{ '✅' if checks.faqs_data else '⏳' }}</div>
+                <h3 class="text-lg font-semibold">3. Cargar Preguntas Frecuentes</h3>
+            </div>
+            
+            {% if checks.faqs_data %}
+                <p class="text-green-600 mb-2">✓ FAQs cargadas desde data/faqs.csv</p>
+                <a href="/admin/knowledge" class="text-blue-600 hover:underline">Ver y editar FAQs →</a>
+            {% else %}
+                <p class="text-gray-600 mb-4">Crea tu archivo de preguntas frecuentes</p>
+                <div class="bg-gray-50 p-4 rounded text-sm">
+                    <p class="font-semibold mb-2">Formato esperado (data/faqs.csv):</p>
+                    <code>question,answer,tags<br>
+                    "¿Cuáles son sus horarios?","Abrimos de 8am a 6pm","horarios"<br>
+                    "¿Dónde están ubicados?","Estamos en...","ubicacion"</code>
+                </div>
+                <a href="/admin/knowledge" class="inline-block mt-3 text-blue-600 hover:underline">Ir a Base de Conocimiento →</a>
+            {% endif %}
+        </div>
+        
+        <!-- Step 4: Menu -->
+        <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 {{ 'border-green-500' if checks.menu_data else 'border-gray-300' }}">
+            <div class="flex items-center mb-4">
+                <div class="text-2xl mr-3">{{ '✅' if checks.menu_data else '⏳' }}</div>
+                <h3 class="text-lg font-semibold">4. Configurar Menú/Productos</h3>
+            </div>
+            
+            {% if checks.menu_data %}
+                <p class="text-green-600 mb-2">✓ Menú cargado desde data/menu.csv</p>
+                <a href="/admin/menu" class="text-blue-600 hover:underline">Ver y editar menú →</a>
+            {% else %}
+                <p class="text-gray-600 mb-4">Crea tu archivo de menú</p>
+                <div class="bg-gray-50 p-4 rounded text-sm">
+                    <p class="font-semibold mb-2">Formato esperado (data/menu.csv):</p>
+                    <code>name,price,description,category,available<br>
+                    "Pizza Margherita",12.99,"Pizza clásica con queso","pizza",true<br>
+                    "Hamburguesa Clásica",8.50,"Carne, lechuga, tomate","hamburguesa",true</code>
+                </div>
+                <a href="/admin/menu" class="inline-block mt-3 text-blue-600 hover:underline">Ir a Gestión de Menú →</a>
+            {% endif %}
+        </div>
+        
+        <!-- Step 5: Index -->
+        <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 {{ 'border-green-500' if checks.index_built else 'border-gray-300' }}">
+            <div class="flex items-center mb-4">
+                <div class="text-2xl mr-3">{{ '✅' if checks.index_built else '⏳' }}</div>
+                <h3 class="text-lg font-semibold">5. Construir Índice de Búsqueda</h3>
+            </div>
+            
+            {% if checks.index_built %}
+                <p class="text-green-600 mb-2">✓ Índice de búsqueda construido</p>
+                <button onclick="rebuildIndex()" class="text-blue-600 hover:underline">Re-construir índice</button>
+            {% else %}
+                <p class="text-gray-600 mb-4">Construye el índice para que el bot pueda buscar información</p>
+                <button onclick="rebuildIndex()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                    Construir Índice Ahora
+                </button>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Next Steps -->
+    {% if completed_checks == total_checks %}
+    <div class="mt-8 bg-green-50 border border-green-200 p-6 rounded-xl">
+        <h3 class="text-lg font-semibold text-green-800 mb-2">🎉 ¡Configuración Completa!</h3>
+        <p class="text-green-700 mb-4">Tu asistente virtual está listo para usar. Próximos pasos:</p>
+        
+        <div class="space-y-2">
+            <a href="/admin/playground" class="block text-blue-600 hover:underline">• Probar el bot en el playground</a>
+            <a href="/demo" target="_blank" class="block text-blue-600 hover:underline">• Ver el chat demo</a>
+            <a href="/admin/channels" class="block text-blue-600 hover:underline">• Configurar WhatsApp/Telegram</a>
+            <a href="/admin/analytics" class="block text-blue-600 hover:underline">• Revisar analítica</a>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+async function rebuildIndex() {
+    const button = event.target;
+    const originalText = button.textContent;
+    
+    button.textContent = 'Construyendo...';
+    button.disabled = true;
+    
+    try {
+        const response = await fetch('/admin/rebuild-index', { method: 'POST' });
+        if (response.ok) {
+            location.reload();
+        } else {
+            alert('Error al construir el índice');
+            button.textContent = originalText;
+            button.disabled = false;
+        }
+    } catch (error) {
+        alert('Error: ' + error.message);
+        button.textContent = originalText;
+        button.disabled = false;
+    }
+}
+</script>
+{% endblock %}

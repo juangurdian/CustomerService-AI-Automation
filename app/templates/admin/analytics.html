@@ -1,0 +1,250 @@
+{% extends "base.html" %}
+
+{% block title %}Analítica{% endblock %}
+
+{% block content %}
+<div class="mb-8">
+    <h1 class="text-3xl font-bold text-gray-900 mb-2">Analítica</h1>
+    <p class="text-gray-600">Métricas y estadísticas de tu asistente virtual</p>
+</div>
+
+<!-- Summary Cards -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+    <div class="bg-white p-6 rounded-xl shadow-sm">
+        <div class="flex items-center">
+            <div class="text-3xl text-blue-500 mr-4">💬</div>
+            <div>
+                <p class="text-2xl font-bold text-gray-900">{{ analytics.messages_by_channel.values() | sum }}</p>
+                <p class="text-sm text-gray-600">Total Conversaciones</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="bg-white p-6 rounded-xl shadow-sm">
+        <div class="flex items-center">
+            <div class="text-3xl text-green-500 mr-4">📋</div>
+            <div>
+                <p class="text-2xl font-bold text-gray-900">{{ analytics.orders_by_status.values() | sum }}</p>
+                <p class="text-sm text-gray-600">Total Pedidos</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="bg-white p-6 rounded-xl shadow-sm">
+        <div class="flex items-center">
+            <div class="text-3xl text-purple-500 mr-4">🎯</div>
+            <div>
+                {% set total_messages = analytics.messages_by_intent.values() | sum %}
+                {% set successful_intents = analytics.messages_by_intent.values() | sum - analytics.messages_by_intent.get('unknown', 0) %}
+                {% set success_rate = (successful_intents / total_messages * 100) if total_messages > 0 else 0 %}
+                <p class="text-2xl font-bold text-gray-900">{{ "%.1f"|format(success_rate) }}%</p>
+                <p class="text-sm text-gray-600">Precisión</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+    <!-- Channels Chart -->
+    <div class="bg-white p-6 rounded-xl shadow-sm">
+        <h3 class="text-lg font-bold text-gray-800 mb-4">📱 Distribución por Canal</h3>
+        <canvas id="channelsChart" width="400" height="200"></canvas>
+    </div>
+    
+    <!-- Intents Chart -->
+    <div class="bg-white p-6 rounded-xl shadow-sm">
+        <h3 class="text-lg font-bold text-gray-800 mb-4">🎯 Intenciones Detectadas</h3>
+        <canvas id="intentsChart" width="400" height="200"></canvas>
+    </div>
+</div>
+
+<!-- Activity Timeline -->
+<div class="bg-white p-6 rounded-xl shadow-sm mb-8">
+    <h3 class="text-lg font-bold text-gray-800 mb-4">📈 Actividad Diaria</h3>
+    <canvas id="activityChart" width="800" height="300"></canvas>
+</div>
+
+<!-- Detailed Tables -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+    <!-- Top Intents -->
+    <div class="bg-white p-6 rounded-xl shadow-sm">
+        <h3 class="text-lg font-bold text-gray-800 mb-4">🔥 Consultas Más Frecuentes</h3>
+        
+        {% if analytics.messages_by_intent %}
+        <div class="space-y-3">
+            {% for intent, count in analytics.messages_by_intent.items() | sort(reverse=true, attribute='1') %}
+            <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                <div>
+                    <span class="font-medium capitalize">{{ intent.replace('_', ' ') }}</span>
+                    {% if intent == 'faq' %}
+                    <span class="text-gray-600">- Preguntas frecuentes</span>
+                    {% elif intent == 'menu' %}
+                    <span class="text-gray-600">- Consultas de menú</span>
+                    {% elif intent == 'order' %}
+                    <span class="text-gray-600">- Solicitudes de pedido</span>
+                    {% endif %}
+                </div>
+                <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm">{{ count }}</span>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="text-gray-600 text-center py-8">No hay datos disponibles aún</p>
+        {% endif %}
+    </div>
+    
+    <!-- Order Status -->
+    <div class="bg-white p-6 rounded-xl shadow-sm">
+        <h3 class="text-lg font-bold text-gray-800 mb-4">📊 Estados de Pedidos</h3>
+        
+        {% if analytics.orders_by_status %}
+        <div class="space-y-3">
+            {% for status, count in analytics.orders_by_status.items() %}
+            <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                <div class="flex items-center">
+                    {% if status == 'new' %}
+                    <span class="text-2xl mr-2">🆕</span>
+                    {% elif status == 'confirmed' %}
+                    <span class="text-2xl mr-2">⏳</span>
+                    {% elif status == 'fulfilled' %}
+                    <span class="text-2xl mr-2">✅</span>
+                    {% else %}
+                    <span class="text-2xl mr-2">❌</span>
+                    {% endif %}
+                    <span class="font-medium capitalize">{{ status.replace('_', ' ') }}</span>
+                </div>
+                <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">{{ count }}</span>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="text-gray-600 text-center py-8">No hay pedidos aún</p>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+// Channel Distribution Chart
+const channelsCtx = document.getElementById('channelsChart').getContext('2d');
+const channelsData = {{ analytics.messages_by_channel | tojson }};
+
+new Chart(channelsCtx, {
+    type: 'doughnut',
+    data: {
+        labels: Object.keys(channelsData).map(k => k.charAt(0).toUpperCase() + k.slice(1)),
+        datasets: [{
+            data: Object.values(channelsData),
+            backgroundColor: ['#3B82F6', '#10B981', '#8B5CF6', '#F59E0B'],
+            borderWidth: 2,
+            borderColor: '#fff'
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom'
+            }
+        }
+    }
+});
+
+// Intents Chart
+const intentsCtx = document.getElementById('intentsChart').getContext('2d');
+const intentsData = {{ analytics.messages_by_intent | tojson }};
+
+new Chart(intentsCtx, {
+    type: 'bar',
+    data: {
+        labels: Object.keys(intentsData).map(k => k.charAt(0).toUpperCase() + k.slice(1)),
+        datasets: [{
+            data: Object.values(intentsData),
+            backgroundColor: '#3B82F6',
+            borderColor: '#2563EB',
+            borderWidth: 1
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                display: false
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    stepSize: 1
+                }
+            }
+        }
+    }
+});
+
+// Activity Timeline Chart
+const activityCtx = document.getElementById('activityChart').getContext('2d');
+const activityData = {{ analytics.daily_activity | tojson }};
+
+const sortedDates = Object.keys(activityData).sort();
+const activityCounts = sortedDates.map(date => activityData[date]);
+
+new Chart(activityCtx, {
+    type: 'line',
+    data: {
+        labels: sortedDates.map(date => {
+            const d = new Date(date);
+            return d.toLocaleDateString('es', { month: 'short', day: 'numeric' });
+        }),
+        datasets: [{
+            label: 'Mensajes',
+            data: activityCounts,
+            borderColor: '#3B82F6',
+            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+            fill: true,
+            tension: 0.3
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                display: false
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    stepSize: 1
+                }
+            }
+        }
+    }
+});
+
+function exportAnalytics() {
+    // Export analytics data as CSV
+    const csvData = [
+        ['Fecha', 'Canal', 'Intención', 'Cantidad'],
+        // Add data rows here
+    ];
+    
+    const csvContent = csvData.map(row => row.join(',')).join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    
+    const a = document.createElement('a');
+    a.style.display = 'none';
+    a.href = url;
+    a.download = 'analytics.csv';
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+}
+</script>
+{% endblock %}

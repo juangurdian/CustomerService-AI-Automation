@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block title %}Bienvenido - {{ config.business.name }}{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <div class="text-center mb-12">
+        <h1 class="text-4xl font-bold text-gray-900 mb-4">{{ config.business.name }}</h1>
+        <p class="text-xl text-gray-600 mb-8">Asistente Virtual de Atención al Cliente</p>
+        
+        <div class="flex justify-center space-x-4">
+            <a href="/admin" class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700">
+                🚀 Ir al Panel de Control
+            </a>
+            <a href="/demo" class="bg-gray-600 text-white px-6 py-3 rounded-lg hover:bg-gray-700">
+                💬 Probar Chat
+            </a>
+        </div>
+    </div>
+    
+    <div class="grid md:grid-cols-3 gap-8 mb-12">
+        <div class="bg-white p-6 rounded-xl shadow-sm">
+            <div class="text-3xl mb-4">🤖</div>
+            <h3 class="text-lg font-semibold mb-2">AI Inteligente</h3>
+            <p class="text-gray-600">Respuestas automáticas basadas en tu base de conocimiento y menú.</p>
+        </div>
+        
+        <div class="bg-white p-6 rounded-xl shadow-sm">
+            <div class="text-3xl mb-4">📱</div>
+            <h3 class="text-lg font-semibold mb-2">Multi-Canal</h3>
+            <p class="text-gray-600">Web, WhatsApp y Telegram desde un solo panel de control.</p>
+        </div>
+        
+        <div class="bg-white p-6 rounded-xl shadow-sm">
+            <div class="text-3xl mb-4">⚡</div>
+            <h3 class="text-lg font-semibold mb-2">Fácil Setup</h3>
+            <p class="text-gray-600">Configura en minutos, sin conocimientos técnicos avanzados.</p>
+        </div>
+    </div>
+    
+    <div class="bg-white p-8 rounded-xl shadow-sm">
+        <h2 class="text-2xl font-bold mb-6">Información del Negocio</h2>
+        
+        <div class="grid md:grid-cols-2 gap-6">
+            <div>
+                <h3 class="font-semibold text-gray-800 mb-2">📍 Ubicación</h3>
+                <p class="text-gray-600">{{ config.business.address or 'No configurada' }}</p>
+            </div>
+            
+            <div>
+                <h3 class="font-semibold text-gray-800 mb-2">📞 Contacto</h3>
+                <p class="text-gray-600">{{ config.business.phone or 'No configurado' }}</p>
+            </div>
+            
+            <div>
+                <h3 class="font-semibold text-gray-800 mb-2">🕒 Horarios</h3>
+                {% if config.business.hours %}
+                    {% for day, hours in config.business.hours.items() %}
+                    <p class="text-gray-600">{{ day.replace('_', ' ').title() }}: {{ hours }}</p>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-gray-600">No configurados</p>
+                {% endif %}
+            </div>
+            
+            <div>
+                <h3 class="font-semibold text-gray-800 mb-2">🧠 Modo AI</h3>
+                <p class="text-gray-600">{{ config.ai.mode }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

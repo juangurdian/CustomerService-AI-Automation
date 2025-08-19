@@ -1,0 +1,259 @@
+{% extends "base.html" %}
+
+{% block title %}Configuración{% endblock %}
+
+{% block content %}
+<div class="mb-8">
+    <h1 class="text-3xl font-bold text-gray-900 mb-2">Configuración</h1>
+    <p class="text-gray-600">Ajustes generales del sistema y API keys</p>
+</div>
+
+<!-- API Configuration -->
+<div class="bg-white p-6 rounded-xl shadow-sm mb-8">
+    <h2 class="text-xl font-bold text-gray-800 mb-4">🧠 Configuración de AI</h2>
+    
+    <div class="grid md:grid-cols-2 gap-6">
+        <div>
+            <h3 class="font-semibold text-gray-800 mb-3">Modo Actual</h3>
+            <div class="bg-blue-50 p-4 rounded-lg">
+                <p class="font-medium text-blue-800">{{ config.ai.mode }}</p>
+                <p class="text-sm text-blue-600 mt-1">
+                    {% if config.ai.mode == 'rag_only' %}
+                    Solo base de conocimiento (gratuito)
+                    {% elif config.ai.mode == 'api_llm' %}
+                    Usando API externa ({{ config.ai.model_name }})
+                    {% elif config.ai.mode == 'local_llm' %}
+                    Modelo local ({{ config.ai.model_name }})
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+        
+        <div>
+            <h3 class="font-semibold text-gray-800 mb-3">APIs Configuradas</h3>
+            <div class="space-y-2">
+                <div class="flex justify-between items-center">
+                    <span class="text-gray-600">OpenAI:</span>
+                    <span class="text-sm {{ 'text-green-600' if settings.openai_configured else 'text-gray-400' }}">
+                        {{ '✅ Configurado' if settings.openai_configured else '⚪ No configurado' }}
+                    </span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-gray-600">Groq:</span>
+                    <span class="text-sm {{ 'text-green-600' if settings.groq_configured else 'text-gray-400' }}">
+                        {{ '✅ Configurado' if settings.groq_configured else '⚪ No configurado' }}
+                    </span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-gray-600">Gemini:</span>
+                    <span class="text-sm {{ 'text-green-600' if settings.gemini_configured else 'text-gray-400' }}">
+                        {{ '✅ Configurado' if settings.gemini_configured else '⚪ No configurado' }}
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="mt-6 bg-yellow-50 p-4 rounded-lg">
+        <p class="text-yellow-800 text-sm">
+            💡 <strong>Tip:</strong> Para cambiar las API keys, edita el archivo .env y reinicia la aplicación.
+        </p>
+    </div>
+</div>
+
+<!-- Channel Configuration -->
+<div class="bg-white p-6 rounded-xl shadow-sm mb-8">
+    <h2 class="text-xl font-bold text-gray-800 mb-4">📱 Estado de Canales</h2>
+    
+    <div class="grid md:grid-cols-2 gap-6">
+        <div>
+            <h3 class="font-semibold text-gray-800 mb-3">Canales de Comunicación</h3>
+            <div class="space-y-2">
+                <div class="flex justify-between items-center">
+                    <span class="text-gray-600">Web Chat:</span>
+                    <span class="text-sm text-green-600">✅ Activo</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-gray-600">WhatsApp:</span>
+                    <span class="text-sm {{ 'text-green-600' if settings.twilio_configured or settings.whatsapp_configured else 'text-gray-400' }}">
+                        {{ '✅ Configurado' if settings.twilio_configured or settings.whatsapp_configured else '⚪ No configurado' }}
+                    </span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-gray-600">Telegram:</span>
+                    <span class="text-sm {{ 'text-green-600' if settings.telegram_configured else 'text-gray-400' }}">
+                        {{ '✅ Configurado' if settings.telegram_configured else '⚪ No configurado' }}
+                    </span>
+                </div>
+            </div>
+        </div>
+        
+        <div>
+            <h3 class="font-semibold text-gray-800 mb-3">Próximos Pasos</h3>
+            <div class="space-y-2 text-sm">
+                {% if not (settings.twilio_configured or settings.whatsapp_configured) %}
+                <a href="/admin/channels" class="block text-blue-600 hover:underline">• Configurar WhatsApp</a>
+                {% endif %}
+                {% if not settings.telegram_configured %}
+                <a href="/admin/channels" class="block text-blue-600 hover:underline">• Configurar Telegram</a>
+                {% endif %}
+                <a href="/admin/playground" class="block text-blue-600 hover:underline">• Probar el bot</a>
+                <a href="/demo" target="_blank" class="block text-blue-600 hover:underline">• Ver demo público</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Business Configuration -->
+<div class="bg-white p-6 rounded-xl shadow-sm mb-8">
+    <h2 class="text-xl font-bold text-gray-800 mb-4">🏪 Información del Negocio</h2>
+    
+    <div class="grid md:grid-cols-2 gap-6">
+        <div>
+            <h3 class="font-semibold text-gray-800 mb-3">Datos Básicos</h3>
+            <div class="space-y-3">
+                <div>
+                    <label class="text-sm text-gray-600">Nombre del Negocio</label>
+                    <p class="font-medium">{{ config.business.name }}</p>
+                </div>
+                <div>
+                    <label class="text-sm text-gray-600">Dirección</label>
+                    <p class="font-medium">{{ config.business.address or 'No configurada' }}</p>
+                </div>
+                <div>
+                    <label class="text-sm text-gray-600">Teléfono</label>
+                    <p class="font-medium">{{ config.business.phone or 'No configurado' }}</p>
+                </div>
+            </div>
+        </div>
+        
+        <div>
+            <h3 class="font-semibold text-gray-800 mb-3">Horarios de Atención</h3>
+            {% if config.business.hours %}
+            <div class="space-y-2">
+                {% for day, hours in config.business.hours.items() %}
+                <div class="flex justify-between">
+                    <span class="text-gray-600">{{ day.replace('_', ' ').title() }}:</span>
+                    <span class="font-medium">{{ hours }}</span>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-gray-600">No configurados</p>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="mt-6 bg-blue-50 p-4 rounded-lg">
+        <p class="text-blue-800 text-sm">
+            💡 <strong>Para modificar:</strong> Edita el archivo config.yaml y reinicia la aplicación.
+        </p>
+    </div>
+</div>
+
+<!-- System Actions -->
+<div class="bg-white p-6 rounded-xl shadow-sm mb-8">
+    <h2 class="text-xl font-bold text-gray-800 mb-4">🔧 Acciones del Sistema</h2>
+    
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <button onclick="rebuildIndex()" class="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 text-center">
+            <div class="text-2xl mb-2">🔄</div>
+            <p class="text-sm font-medium">Re-indexar</p>
+        </button>
+        
+        <button onclick="downloadBackup()" class="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 text-center">
+            <div class="text-2xl mb-2">💾</div>
+            <p class="text-sm font-medium">Backup BD</p>
+        </button>
+        
+        <button onclick="exportConfig()" class="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 text-center">
+            <div class="text-2xl mb-2">📄</div>
+            <p class="text-sm font-medium">Exportar Config</p>
+        </button>
+        
+        <a href="/healthz" target="_blank" class="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 text-center block">
+            <div class="text-2xl mb-2">💊</div>
+            <p class="text-sm font-medium">Health Check</p>
+        </a>
+    </div>
+</div>
+
+<!-- Quick Setup Guide -->
+<div class="bg-white p-6 rounded-xl shadow-sm">
+    <h2 class="text-xl font-bold text-gray-800 mb-4">📖 Guía Rápida</h2>
+    
+    <div class="grid md:grid-cols-2 gap-6">
+        <div>
+            <h3 class="font-semibold text-gray-800 mb-3">✅ Para Comenzar</h3>
+            <ol class="space-y-2 text-sm text-gray-600">
+                <li>1. Completa la <a href="/admin/onboarding" class="text-blue-600 underline">configuración inicial</a></li>
+                <li>2. Carga tus <a href="/admin/knowledge" class="text-blue-600 underline">FAQs y documentos</a></li>
+                <li>3. Configura tu <a href="/admin/menu" class="text-blue-600 underline">menú de productos</a></li>
+                <li>4. Prueba el bot en el <a href="/admin/playground" class="text-blue-600 underline">playground</a></li>
+                <li>5. Integra el <a href="/admin/channels" class="text-blue-600 underline">widget en tu sitio</a></li>
+            </ol>
+        </div>
+        
+        <div>
+            <h3 class="font-semibold text-gray-800 mb-3">🚀 Para Producción</h3>
+            <ol class="space-y-2 text-sm text-gray-600">
+                <li>1. Configura un dominio con HTTPS</li>
+                <li>2. Actualiza webhooks de WhatsApp/Telegram</li>
+                <li>3. Configura backups automáticos</li>
+                <li>4. Monitorea la <a href="/admin/analytics" class="text-blue-600 underline">analítica</a></li>
+                <li>5. Revisa <a href="/admin/orders" class="text-blue-600 underline">pedidos</a> regularmente</li>
+            </ol>
+        </div>
+    </div>
+</div>
+
+<script>
+async function rebuildIndex() {
+    if (confirm('¿Re-construir el índice de búsqueda?')) {
+        const button = event.target;
+        button.innerHTML = '<div class="text-2xl mb-2">⏳</div><p class="text-sm font-medium">Procesando...</p>';
+        button.disabled = true;
+        
+        try {
+            const response = await fetch('/admin/rebuild-index', { method: 'POST' });
+            if (response.ok) {
+                alert('Índice reconstruido exitosamente');
+                location.reload();
+            } else {
+                alert('Error al reconstruir el índice');
+            }
+        } catch (error) {
+            alert('Error: ' + error.message);
+        }
+    }
+}
+
+function downloadBackup() {
+    // Simple database backup download
+    if (confirm('¿Descargar backup de la base de datos?')) {
+        window.location.href = '/api/backup/download';
+    }
+}
+
+function exportConfig() {
+    // Export current configuration
+    fetch('/api/config')
+        .then(response => response.json())
+        .then(config => {
+            const blob = new Blob([JSON.stringify(config, null, 2)], { type: 'application/json' });
+            const url = window.URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = url;
+            a.download = 'config_backup.json';
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+        })
+        .catch(error => {
+            alert('Error exportando configuración: ' + error.message);
+        });
+}
+</script>
+{% endblock %}

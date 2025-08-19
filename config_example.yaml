@@ -1,0 +1,64 @@
+business:
+  name: "La Tiendita Don Chepe"
+  timezone: "America/Managua"
+  language: "es"
+  address: "Barrio X, frente a..."
+  phone: "+505XXXXXXXX"
+  email: "contacto@latiendita.com"
+  hours:
+    mon_fri: "8:00-18:00"
+    sat: "9:00-14:00"
+    sun: "cerrado"
+
+ai:
+  mode: "rag_only"   # rag_only | api_llm | local_llm
+  model_name: "gpt-4o-mini"
+  temperature: 0.2
+  max_tokens: 500
+
+retrieval:
+  top_k: 4
+  min_score: 0.5
+  chunk_size: 300
+
+responses:
+  tone: "cercano"
+  fallback: "Perdóname, no te entendí bien. ¿Me lo repetís?"
+  escalate: "Te paso con alguien del equipo en un momento."
+  greeting: "¡Hola! Soy el asistente virtual de {business_name}. ¿En qué te puedo ayudar?"
+  quick_replies: ["Ver menú", "Ubicación", "Horarios", "Hacer pedido"]
+
+orders:
+  enable: true
+  notify_email: "pedidos@latiendita.com"
+  notify_whatsapp: "whatsapp:+505XXXXXXXX"
+  require_phone: true
+  auto_confirm: false
+
+channels:
+  web:
+    enabled: true
+    widget_title: "Chat con {business_name}"
+    widget_color: "#2563EB"
+  whatsapp:
+    enabled: false
+    provider: "twilio"  # twilio | cloud_api
+  telegram:
+    enabled: false
+
+flows:
+  quick_order:
+    steps:
+      - ask: "¿Tu nombre?"
+        var: name
+        validation: "required"
+      - ask: "¿Qué producto querés?"
+        var: product
+        validation: "required"
+      - ask: "¿Cantidad?"
+        var: qty
+        validation: "number"
+      - ask: "¿Tu teléfono para confirmar?"
+        var: phone
+        validation: "phone"
+      - confirm: "Perfecto, {qty} x {product} a nombre de {name}. Total aproximado basado en nuestro menú. ¿Confirmamos? Te contactaremos al {phone}."

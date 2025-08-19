@@ -1,0 +1,9 @@
+question,answer,tags
+"¿Cuáles son sus horarios?","Nuestros horarios son: Lunes a Viernes de 8:00am a 6:00pm, Sábados de 9:00am a 2:00pm. Los domingos permanecemos cerrados.","horarios,tiempo"
+"¿Dónde están ubicados?","Nos encontramos en el Barrio X, frente al parque central. Búscanos por la calle principal.","ubicacion,direccion"
+"¿Cómo puedo pagar?","Aceptamos efectivo, tarjeta de débito, tarjeta de crédito y transferencias bancarias. También puedes pagar con apps móviles como Tigo Money.","pagos,metodos"
+"¿Hacen delivery?","Sí, hacemos delivery en la zona. El costo depende de la distancia. Pedinos tu dirección y te confirmamos.","delivery,envio"
+"¿Cuánto demoran los pedidos?","Los pedidos normalmente están listos en 15-20 minutos. Para delivery agregamos 10-15 minutos más según la ubicación.","tiempo,pedidos"
+"¿Tienen promociones?","Sí, todos los días tenemos ofertas especiales. Pregunta por nuestras promociones del día o síguenos en redes sociales.","promociones,ofertas"
+"¿Puedo modificar mi pedido?","Si tu pedido aún no está en preparación, podés modificarlo sin problema. Contactanos lo antes posible.","pedidos,modificar"
+"¿Tienen opciones vegetarianas?","Sí, tenemos varias opciones vegetarianas en nuestro menú. Pregunta por los platillos sin carne.","vegetariano,menu"

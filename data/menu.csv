@@ -1,0 +1,15 @@
+id,name,price,description,category,available,tags,featured
+1,"Pizza Margherita",12.99,"Pizza clásica con salsa de tomate, mozzarella fresca y albahaca","pizza",true,"vegetariano,clasico",true
+2,"Pizza Pepperoni",14.99,"Pizza con pepperoni, mozzarella y salsa de tomate","pizza",true,"clasico,carne",false
+3,"Hamburguesa Clásica",8.50,"Carne de res, lechuga, tomate, cebolla y salsa especial","hamburguesa",true,"carne,clasico",true
+4,"Hamburguesa Vegetariana",9.00,"Hamburguesa de lentejas con aguacate, lechuga y tomate","hamburguesa",true,"vegetariano",false
+5,"Tacos de Pollo",6.99,"3 tacos con pollo marinado, cebolla, cilantro y salsa verde","tacos",true,"pollo,mexicano",false
+6,"Tacos de Carne",7.50,"3 tacos con carne asada, cebolla, cilantro y salsa roja","tacos",true,"carne,mexicano",false
+7,"Ensalada César",7.99,"Lechuga romana, crutones, queso parmesano y aderezo césar","ensalada",true,"vegetariano,saludable",false
+8,"Quesadilla de Queso",5.99,"Tortilla de harina con queso derretido","quesadilla",true,"vegetariano,clasico",false
+9,"Burrito de Pollo",9.50,"Pollo, frijoles, arroz, queso y salsa en tortilla de harina","burrito",true,"pollo,mexicano",true
+10,"Agua Natural",1.50,"Agua purificada 500ml","bebida",true,"bebida,agua",false
+11,"Refresco",2.00,"Coca Cola, Pepsi, Sprite - Lata 355ml","bebida",true,"bebida,refresco",false
+12,"Café Americano",2.50,"Café negro recién hecho","bebida",true,"bebida,cafe,caliente",false
+13,"Jugo Natural",3.00,"Jugo de naranja, mango o piña - natural del día","bebida",true,"bebida,natural,jugo",false
+14,"Postre del Día",4.50,"Pregunta por el postre especial de hoy","postre",true,"dulce,especial",false

@@ -1,0 +1,199 @@
+{% extends "base.html" %}
+
+{% block title %}Configuración de Canales{% endblock %}
+
+{% block content %}
+<div class="mb-8">
+    <h1 class="text-3xl font-bold text-gray-900 mb-2">Configuración de Canales</h1>
+    <p class="text-gray-600">Configura WhatsApp, Telegram y otros canales de comunicación</p>
+</div>
+
+<!-- Web Chat -->
+<div class="bg-white p-6 rounded-xl shadow-sm mb-6">
+    <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center">
+            <span class="text-2xl mr-3">💬</span>
+            <div>
+                <h3 class="text-lg font-semibold">Chat Web</h3>
+                <p class="text-sm text-gray-600">Widget embebible para tu sitio web</p>
+            </div>
+        </div>
+        <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">✅ Activo</span>
+    </div>
+    
+    <div class="bg-gray-50 p-4 rounded-lg">
+        <p class="font-semibold mb-2">Código para integrar en tu sitio:</p>
+        <div class="bg-gray-900 text-green-400 p-3 rounded font-mono text-sm overflow-x-auto">
+            <code>&lt;script src="{{ request.url.scheme }}://{{ request.url.netloc }}/widget/widget.js" defer&gt;&lt;/script&gt;</code>
+        </div>
+        <button onclick="copyWebCode()" class="mt-2 text-blue-600 hover:underline text-sm">📋 Copiar código</button>
+    </div>
+    
+    <div class="mt-4">
+        <a href="/demo" target="_blank" class="text-blue-600 hover:underline">🔗 Ver demo del chat web</a>
+    </div>
+</div>
+
+<!-- WhatsApp -->
+<div class="bg-white p-6 rounded-xl shadow-sm mb-6">
+    <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center">
+            <span class="text-2xl mr-3">💚</span>
+            <div>
+                <h3 class="text-lg font-semibold">WhatsApp</h3>
+                <p class="text-sm text-gray-600">Conecta tu bot con WhatsApp Business</p>
+            </div>
+        </div>
+        <span class="bg-{{ 'green' if channel_status.whatsapp_twilio or channel_status.whatsapp_cloud else 'gray' }}-100 text-{{ 'green' if channel_status.whatsapp_twilio or channel_status.whatsapp_cloud else 'gray' }}-800 px-3 py-1 rounded-full text-sm">
+            {{ '✅ Configurado' if channel_status.whatsapp_twilio or channel_status.whatsapp_cloud else '⏳ Pendiente' }}
+        </span>
+    </div>
+    
+    <div class="space-y-4">
+        <!-- Twilio Option -->
+        <div class="border border-gray-200 rounded-lg p-4">
+            <h4 class="font-semibold mb-2">Opción 1: Twilio (Recomendado)</h4>
+            <p class="text-sm text-gray-600 mb-3">Más fácil de configurar, ideal para principiantes</p>
+            
+            {% if channel_status.whatsapp_twilio %}
+            <div class="bg-green-50 p-3 rounded">
+                <p class="text-green-700 text-sm">✅ Twilio configurado correctamente</p>
+                <p class="text-xs text-gray-600 mt-1">Webhook URL: <code>{{ request.url.scheme }}://{{ request.url.netloc }}/webhook/twilio</code></p>
+            </div>
+            {% else %}
+            <div class="bg-yellow-50 p-3 rounded">
+                <p class="text-yellow-700 text-sm mb-2">⚠️ Configura estas variables en tu .env:</p>
+                <ul class="text-xs text-gray-600 space-y-1">
+                    <li>• TWILIO_ACCOUNT_SID</li>
+                    <li>• TWILIO_AUTH_TOKEN</li>
+                    <li>• TWILIO_WHATSAPP_FROM</li>
+                </ul>
+                <p class="text-xs text-gray-600 mt-2">
+                    Webhook: <code>{{ request.url.scheme }}://{{ request.url.netloc }}/webhook/twilio</code>
+                </p>
+            </div>
+            {% endif %}
+        </div>
+        
+        <!-- Cloud API Option -->
+        <div class="border border-gray-200 rounded-lg p-4">
+            <h4 class="font-semibold mb-2">Opción 2: WhatsApp Cloud API</h4>
+            <p class="text-sm text-gray-600 mb-3">API oficial de Meta, más control</p>
+            
+            {% if channel_status.whatsapp_cloud %}
+            <div class="bg-green-50 p-3 rounded">
+                <p class="text-green-700 text-sm">✅ WhatsApp Cloud API configurado</p>
+                <p class="text-xs text-gray-600 mt-1">Webhook URL: <code>{{ request.url.scheme }}://{{ request.url.netloc }}/webhook/whatsapp</code></p>
+            </div>
+            {% else %}
+            <div class="bg-yellow-50 p-3 rounded">
+                <p class="text-yellow-700 text-sm mb-2">⚠️ Configura estas variables en tu .env:</p>
+                <ul class="text-xs text-gray-600 space-y-1">
+                    <li>• WHATSAPP_TOKEN</li>
+                    <li>• PHONE_NUMBER_ID</li>
+                    <li>• VERIFY_TOKEN</li>
+                </ul>
+                <p class="text-xs text-gray-600 mt-2">
+                    Webhook: <code>{{ request.url.scheme }}://{{ request.url.netloc }}/webhook/whatsapp</code>
+                </p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Telegram -->
+<div class="bg-white p-6 rounded-xl shadow-sm mb-6">
+    <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center">
+            <span class="text-2xl mr-3">✈️</span>
+            <div>
+                <h3 class="text-lg font-semibold">Telegram</h3>
+                <p class="text-sm text-gray-600">Bot de Telegram para atención al cliente</p>
+            </div>
+        </div>
+        <span class="bg-{{ 'green' if channel_status.telegram else 'gray' }}-100 text-{{ 'green' if channel_status.telegram else 'gray' }}-800 px-3 py-1 rounded-full text-sm">
+            {{ '✅ Configurado' if channel_status.telegram else '⏳ Pendiente' }}
+        </span>
+    </div>
+    
+    {% if channel_status.telegram %}
+    <div class="bg-green-50 p-4 rounded-lg">
+        <p class="text-green-700 text-sm mb-2">✅ Bot de Telegram configurado</p>
+        <button onclick="setTelegramWebhook()" class="bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-700">
+            🔄 Configurar Webhook
+        </button>
+    </div>
+    {% else %}
+    <div class="bg-yellow-50 p-4 rounded-lg">
+        <p class="text-yellow-700 text-sm mb-3">⚠️ Para configurar Telegram:</p>
+        <ol class="text-sm text-gray-600 space-y-1 mb-3">
+            <li>1. Habla con @BotFather en Telegram</li>
+            <li>2. Crea un nuevo bot con /newbot</li>
+            <li>3. Copia el token que te da</li>
+            <li>4. Agrega TELEGRAM_BOT_TOKEN en tu .env</li>
+            <li>5. Reinicia la aplicación</li>
+        </ol>
+        <p class="text-xs text-gray-500">Webhook URL: <code>{{ request.url.scheme }}://{{ request.url.netloc }}/webhook/telegram</code></p>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Setup Instructions -->
+<div class="bg-white p-6 rounded-xl shadow-sm">
+    <h2 class="text-xl font-bold text-gray-800 mb-4">📖 Guías de Configuración</h2>
+    
+    <div class="space-y-4">
+        <details class="border border-gray-200 rounded-lg p-4">
+            <summary class="font-semibold cursor-pointer">🔧 Configurar Twilio WhatsApp</summary>
+            <div class="mt-3 text-sm text-gray-600 space-y-2">
+                <p>1. Crea una cuenta en <a href="https://twilio.com" target="_blank" class="text-blue-600 underline">Twilio.com</a></p>
+                <p>2. Ve a Console → WhatsApp → Sandbox</p>
+                <p>3. Obtén tu Account SID y Auth Token</p>
+                <p>4. Configura el webhook en Twilio: <code>{{ request.url.scheme }}://{{ request.url.netloc }}/webhook/twilio</code></p>
+                <p>5. Agrega las variables a tu archivo .env</p>
+            </div>
+        </details>
+        
+        <details class="border border-gray-200 rounded-lg p-4">
+            <summary class="font-semibold cursor-pointer">☁️ Configurar WhatsApp Cloud API</summary>
+            <div class="mt-3 text-sm text-gray-600 space-y-2">
+                <p>1. Ve a <a href="https://developers.facebook.com" target="_blank" class="text-blue-600 underline">Facebook Developers</a></p>
+                <p>2. Crea una app de WhatsApp Business</p>
+                <p>3. Obtén tu token y phone number ID</p>
+                <p>4. Configura el webhook: <code>{{ request.url.scheme }}://{{ request.url.netloc }}/webhook/whatsapp</code></p>
+                <p>5. Agrega las variables a tu archivo .env</p>
+            </div>
+        </details>
+    </div>
+</div>
+
+<script>
+function copyWebCode() {
+    const code = `<script src="${window.location.origin}/widget/widget.js" defer></script>`;
+    navigator.clipboard.writeText(code).then(() => {
+        alert('¡Código copiado al portapapeles!');
+    });
+}
+
+async function setTelegramWebhook() {
+    const webhookUrl = `${window.location.origin}/webhook/telegram`;
+    
+    try {
+        const response = await fetch('/webhook/telegram/set-webhook', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ webhook_url: webhookUrl })
+        });
+        
+        if (response.ok) {
+            alert('Webhook de Telegram configurado correctamente');
+        } else {
+            alert('Error al configurar webhook');
+        }
+    } catch (error) {
+        alert('Error: ' + error.message);
+    }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,262 @@
+{% extends "base.html" %}
+
+{% block title %}Menú & Productos{% endblock %}
+
+{% block content %}
+<div class="mb-8">
+    <h1 class="text-3xl font-bold text-gray-900 mb-2">Menú & Productos</h1>
+    <p class="text-gray-600">Gestiona los productos que ofrece tu negocio</p>
+</div>
+
+<!-- Actions -->
+<div class="bg-white p-6 rounded-xl shadow-sm mb-8">
+    <div class="flex flex-wrap gap-4">
+        <button onclick="addProduct()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+            ➕ Agregar Producto
+        </button>
+        
+        <button onclick="document.getElementById('upload-menu').click()" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">
+            📤 Subir CSV de Menú
+        </button>
+        
+        <button onclick="exportMenu()" class="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700">
+            💾 Exportar Menú
+        </button>
+    </div>
+    
+    <!-- Hidden file input -->
+    <input type="file" id="upload-menu" accept=".csv" style="display: none;" onchange="uploadMenuCSV(this)">
+</div>
+
+<!-- Products Grid -->
+{% if products %}
+<div class="grid gap-6">
+    {% for product in products %}
+    <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 {{ 'border-green-500' if product.available else 'border-red-500' }}">
+        <div class="flex justify-between items-start">
+            <div class="flex-1">
+                <div class="flex items-center mb-2">
+                    <h3 class="text-lg font-semibold text-gray-900">{{ product.name }}</h3>
+                    {% if product.featured %}
+                    <span class="ml-2 bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded">⭐ Destacado</span>
+                    {% endif %}
+                    {% if not product.available %}
+                    <span class="ml-2 bg-red-100 text-red-800 text-xs px-2 py-1 rounded">No disponible</span>
+                    {% endif %}
+                </div>
+                
+                <p class="text-2xl font-bold text-green-600 mb-2">${{ "%.2f"|format(product.price) }}</p>
+                
+                {% if product.description %}
+                <p class="text-gray-600 mb-3">{{ product.description }}</p>
+                {% endif %}
+                
+                <div class="flex items-center space-x-4 text-sm">
+                    {% if product.category %}
+                    <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded">{{ product.category }}</span>
+                    {% endif %}
+                    
+                    {% if product.tags %}
+                        {% for tag in product.tags.split(',') %}
+                        <span class="bg-gray-100 text-gray-700 px-2 py-1 rounded">{{ tag.strip() }}</span>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="flex space-x-2 ml-4">
+                <button onclick="editProduct({{ product.id }})" class="text-blue-600 hover:underline text-sm">
+                    ✏️ Editar
+                </button>
+                <button onclick="toggleAvailable({{ product.id }}, {{ product.available|lower }})" class="text-orange-600 hover:underline text-sm">
+                    {{ '🚫 Desactivar' if product.available else '✅ Activar' }}
+                </button>
+                <button onclick="deleteProduct({{ product.id }})" class="text-red-600 hover:underline text-sm">
+                    🗑️ Eliminar
+                </button>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="bg-white rounded-xl shadow-sm p-12 text-center">
+    <div class="text-6xl mb-4">🍽️</div>
+    <h3 class="text-lg font-medium text-gray-900 mb-2">No hay productos en el menú</h3>
+    <p class="text-gray-600 mb-6">Agrega productos para que tu asistente pueda mostrar el menú a los clientes</p>
+    
+    <div class="space-y-4">
+        <button onclick="addProduct()" class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700">
+            ➕ Agregar Primer Producto
+        </button>
+        
+        <div class="bg-gray-50 p-4 rounded-lg text-left max-w-md mx-auto">
+            <p class="font-semibold mb-2">Formato CSV esperado:</p>
+            <code class="text-sm">name,price,description,category,available<br>
+            "Pizza",12.99,"Deliciosa pizza","comida",true</code>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Add/Edit Product Modal -->
+<div id="product-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+    <div class="bg-white rounded-xl p-8 max-w-md w-full mx-4">
+        <h3 id="modal-title" class="text-lg font-bold mb-4">Agregar Producto</h3>
+        
+        <form id="product-form" onsubmit="saveProduct(event)">
+            <input type="hidden" id="product-id">
+            
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Nombre del Producto</label>
+                <input type="text" id="product-name" required class="w-full border border-gray-300 rounded-lg px-3 py-2">
+            </div>
+            
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Precio</label>
+                <input type="number" id="product-price" step="0.01" required class="w-full border border-gray-300 rounded-lg px-3 py-2">
+            </div>
+            
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Descripción</label>
+                <textarea id="product-description" rows="3" class="w-full border border-gray-300 rounded-lg px-3 py-2"></textarea>
+            </div>
+            
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Categoría</label>
+                <input type="text" id="product-category" class="w-full border border-gray-300 rounded-lg px-3 py-2" placeholder="pizza, bebida, postre...">
+            </div>
+            
+            <div class="mb-6">
+                <label class="flex items-center">
+                    <input type="checkbox" id="product-available" checked class="mr-2">
+                    <span class="text-sm font-medium text-gray-700">Disponible</span>
+                </label>
+            </div>
+            
+            <div class="flex space-x-3">
+                <button type="submit" class="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700">
+                    Guardar
+                </button>
+                <button type="button" onclick="closeModal()" class="flex-1 bg-gray-600 text-white py-2 rounded-lg hover:bg-gray-700">
+                    Cancelar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function addProduct() {
+    document.getElementById('modal-title').textContent = 'Agregar Producto';
+    document.getElementById('product-form').reset();
+    document.getElementById('product-id').value = '';
+    document.getElementById('product-modal').classList.remove('hidden');
+    document.getElementById('product-modal').classList.add('flex');
+}
+
+function editProduct(id) {
+    // In a real implementation, fetch product data and populate form
+    document.getElementById('modal-title').textContent = 'Editar Producto';
+    document.getElementById('product-id').value = id;
+    document.getElementById('product-modal').classList.remove('hidden');
+    document.getElementById('product-modal').classList.add('flex');
+}
+
+function closeModal() {
+    document.getElementById('product-modal').classList.add('hidden');
+    document.getElementById('product-modal').classList.remove('flex');
+}
+
+async function saveProduct(event) {
+    event.preventDefault();
+    
+    const formData = {
+        name: document.getElementById('product-name').value,
+        price: parseFloat(document.getElementById('product-price').value),
+        description: document.getElementById('product-description').value,
+        category: document.getElementById('product-category').value,
+        available: document.getElementById('product-available').checked
+    };
+    
+    const productId = document.getElementById('product-id').value;
+    const isEdit = !!productId;
+    
+    try {
+        const response = await fetch(`/api/products${isEdit ? '/' + productId : ''}`, {
+            method: isEdit ? 'PUT' : 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(formData)
+        });
+        
+        if (response.ok) {
+            location.reload();
+        } else {
+            alert('Error al guardar producto');
+        }
+    } catch (error) {
+        alert('Error: ' + error.message);
+    }
+}
+
+async function toggleAvailable(id, currentStatus) {
+    try {
+        const response = await fetch(`/api/products/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ available: !currentStatus })
+        });
+        
+        if (response.ok) {
+            location.reload();
+        } else {
+            alert('Error al actualizar producto');
+        }
+    } catch (error) {
+        alert('Error: ' + error.message);
+    }
+}
+
+async function deleteProduct(id) {
+    if (confirm('¿Eliminar este producto?')) {
+        try {
+            const response = await fetch(`/api/products/${id}`, { method: 'DELETE' });
+            if (response.ok) {
+                location.reload();
+            } else {
+                alert('Error al eliminar');
+            }
+        } catch (error) {
+            alert('Error: ' + error.message);
+        }
+    }
+}
+
+async function uploadMenuCSV(input) {
+    const file = input.files[0];
+    if (!file) return;
+    
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    try {
+        const response = await fetch('/admin/menu/upload-csv', {
+            method: 'POST',
+            body: formData
+        });
+        
+        if (response.ok) {
+            location.reload();
+        } else {
+            alert('Error al subir archivo');
+        }
+    } catch (error) {
+        alert('Error: ' + error.message);
+    }
+}
+
+function exportMenu() {
+    window.location.href = '/api/products/export';
+}
+</script>
+{% endblock %}

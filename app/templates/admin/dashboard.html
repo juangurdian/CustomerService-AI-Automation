@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - {{ config.business.name }}{% endblock %}
+
+{% block content %}
+<div class="mb-8">
+    <h1 class="text-3xl font-bold text-gray-900 mb-2">Dashboard</h1>
+    <p class="text-gray-600">Resumen general de tu asistente virtual</p>
+</div>
+
+<!-- Quick Stats -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+    <div class="bg-white p-6 rounded-xl shadow-sm">
+        <div class="flex items-center">
+            <div class="text-3xl text-blue-500 mr-4">💬</div>
+            <div>
+                <p class="text-2xl font-bold text-gray-900">{{ stats.total_messages }}</p>
+                <p class="text-sm text-gray-600">Conversaciones</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="bg-white p-6 rounded-xl shadow-sm">
+        <div class="flex items-center">
+            <div class="text-3xl text-green-500 mr-4">📋</div>
+            <div>
+                <p class="text-2xl font-bold text-gray-900">{{ stats.total_orders }}</p>
+                <p class="text-sm text-gray-600">Pedidos Total</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="bg-white p-6 rounded-xl shadow-sm">
+        <div class="flex items-center">
+            <div class="text-3xl text-orange-500 mr-4">🆕</div>
+            <div>
+                <p class="text-2xl font-bold text-gray-900">{{ stats.new_orders }}</p>
+                <p class="text-sm text-gray-600">Pedidos Nuevos</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="bg-white p-6 rounded-xl shadow-sm">
+        <div class="flex items-center">
+            <div class="text-3xl text-purple-500 mr-4">📱</div>
+            <div>
+                <p class="text-2xl font-bold text-gray-900">{{ stats.channels }}</p>
+                <p class="text-sm text-gray-600">Canales Activos</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="bg-white p-6 rounded-xl shadow-sm mb-8">
+    <h2 class="text-xl font-bold mb-4">Acciones Rápidas</h2>
+    
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <a href="/admin/playground" class="btn-action text-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50">
+            <div class="text-2xl mb-2">🧪</div>
+            <p class="text-sm font-medium">Probar Bot</p>
+        </a>
+        
+        <button onclick="rebuildIndex()" class="btn-action text-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50">
+            <div class="text-2xl mb-2">🔄</div>
+            <p class="text-sm font-medium">Re-indexar</p>
+        </button>
+        
+        <a href="/admin/knowledge" class="btn-action text-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50">
+            <div class="text-2xl mb-2">📚</div>
+            <p class="text-sm font-medium">Gestionar FAQs</p>
+        </a>
+        
+        <a href="/demo" target="_blank" class="btn-action text-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50">
+            <div class="text-2xl mb-2">💬</div>
+            <p class="text-sm font-medium">Ver Chat Demo</p>
+        </a>
+    </div>
+</div>
+
+<!-- System Status -->
+<div class="bg-white p-6 rounded-xl shadow-sm mb-8">
+    <h2 class="text-xl font-bold mb-4">Estado del Sistema</h2>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+            <h3 class="font-semibold text-gray-800 mb-3">🧠 Configuración AI</h3>
+            <div class="space-y-2">
+                <div class="flex justify-between">
+                    <span class="text-gray-600">Modo:</span>
+                    <span class="font-medium">{{ config.ai.mode }}</span>
+                </div>
+                {% if config.ai.model_name %}
+                <div class="flex justify-between">
+                    <span class="text-gray-600">Modelo:</span>
+                    <span class="font-medium">{{ config.ai.model_name }}</span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div>
+            <h3 class="font-semibold text-gray-800 mb-3">📱 Canales Configurados</h3>
+            <div class="space-y-2">
+                <div class="flex items-center">
+                    <span class="w-3 h-3 bg-green-500 rounded-full mr-2"></span>
+                    <span class="text-gray-600">Web Chat (Siempre activo)</span>
+                </div>
+                <!-- Channel status would be populated by backend -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Activity -->
+<div class="bg-white p-6 rounded-xl shadow-sm">
+    <h2 class="text-xl font-bold mb-4">Actividad Reciente</h2>
+    <p class="text-gray-600">Las conversaciones y pedidos aparecerán aquí una vez que comiences a usar el sistema.</p>
+    
+    <div class="mt-4">
+        <a href="/admin/analytics" class="text-blue-600 hover:text-blue-700 underline">Ver analítica completa →</a>
+    </div>
+</div>
+
+<script>
+async function rebuildIndex() {
+    if (confirm('¿Estás seguro que querés re-indexar la base de conocimiento?')) {
+        try {
+            const response = await fetch('/admin/rebuild-index', { method: 'POST' });
+            if (response.ok) {
+                window.location.href = '/admin/knowledge?message=Índice reconstruido exitosamente';
+            } else {
+                alert('Error al reconstruir el índice');
+            }
+        } catch (error) {
+            alert('Error: ' + error.message);
+        }
+    }
+}
+</script>
+{% endblock %}
