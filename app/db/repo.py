@@ -3,7 +3,7 @@ from sqlmodel import Session, select
 from datetime import datetime
 import json
 
-from app.db.models import Message, FAQ, Product, Order, Doc
+from app.db.models import Message, FAQ, Product, Order, Doc, Setting
 
 
 class MessageRepo:
@@ -199,6 +199,53 @@ class DocRepo:
         doc = self.session.get(Doc, doc_id)
         if doc:
             self.session.delete(doc)
+            self.session.commit()
+            return True
+        return False
+
+
+class SettingRepo:
+    def __init__(self, session: Session):
+        self.session = session
+    
+    def get(self, key: str) -> Optional[Setting]:
+        statement = select(Setting).where(Setting.key == key)
+        return self.session.exec(statement).first()
+    
+    def get_value(self, key: str, default: str = None) -> Optional[str]:
+        setting = self.get(key)
+        return setting.value if setting else default
+    
+    def set(self, key: str, value: str, category: str = "general", is_secret: bool = False) -> Setting:
+        setting = self.get(key)
+        if setting:
+            setting.value = value
+            setting.updated_at = datetime.utcnow()
+        else:
+            setting = Setting(
+                key=key,
+                value=value,
+                category=category,
+                is_secret=is_secret
+            )
+            self.session.add(setting)
+        
+        self.session.commit()
+        self.session.refresh(setting)
+        return setting
+    
+    def get_by_category(self, category: str) -> List[Setting]:
+        statement = select(Setting).where(Setting.category == category)
+        return self.session.exec(statement).all()
+    
+    def get_all(self) -> List[Setting]:
+        statement = select(Setting)
+        return self.session.exec(statement).all()
+    
+    def delete(self, key: str) -> bool:
+        setting = self.get(key)
+        if setting:
+            self.session.delete(setting)
             self.session.commit()
             return True
         return False

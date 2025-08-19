@@ -64,5 +64,47 @@ def load_config() -> dict:
     }
 
 
+def get_dynamic_config():
+    """Get configuration merged with database settings"""
+    # Load base config
+    base_config = load_config()
+    
+    try:
+        from sqlmodel import create_engine, Session
+        from app.db.repo import SettingRepo
+        
+        engine = create_engine(
+            settings.database_url,
+            connect_args={"check_same_thread": False} if "sqlite" in settings.database_url else {}
+        )
+        
+        with Session(engine) as session:
+            setting_repo = SettingRepo(session)
+            
+            # Override business settings from database
+            business_name = setting_repo.get_value("business_name")
+            if business_name:
+                base_config["business"]["name"] = business_name
+            
+            business_timezone = setting_repo.get_value("business_timezone")
+            if business_timezone:
+                base_config["business"]["timezone"] = business_timezone
+            
+            # Override AI settings from database
+            ai_mode = setting_repo.get_value("ai_mode")
+            if ai_mode:
+                base_config["ai"]["mode"] = ai_mode
+                
+            response_tone = setting_repo.get_value("response_tone")
+            if response_tone:
+                base_config["ai"]["tone"] = response_tone
+        
+        return base_config
+    
+    except Exception:
+        # If database is not available, return base config
+        return base_config
+
+
 settings = Settings()
 config = load_config()

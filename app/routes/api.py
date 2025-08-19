@@ -1,12 +1,12 @@
 from typing import List, Dict, Any, Optional
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
 from sqlmodel import Session
 from pydantic import BaseModel
 import json
 import structlog
 
 from app.deps import get_session
-from app.db.repo import MessageRepo, FAQRepo, ProductRepo, OrderRepo, DocRepo
+from app.db.repo import MessageRepo, FAQRepo, ProductRepo, OrderRepo, DocRepo, SettingRepo
 from app.db.models import Message, FAQ, Product, Order, Doc
 from app.services.responder import response_orchestrator
 from app.services.rag import rag_service
@@ -200,3 +200,150 @@ async def get_config():
         pass
     
     return safe_config
+
+
+# Setup Wizard API Endpoints
+class SetupKnowledgeRequest(BaseModel):
+    faqs: List[Dict[str, str]]
+    menu: List[Dict[str, Any]]
+
+
+@router.post("/setup/business")
+async def setup_business(
+    business_name: str = Form(...),
+    business_phone: Optional[str] = Form(None),
+    business_email: Optional[str] = Form(None),
+    business_timezone: str = Form("America/Mexico_City"),
+    business_address: Optional[str] = Form(None),
+    hours_mon_fri: Optional[str] = Form(None),
+    hours_sat: Optional[str] = Form(None),
+    hours_sun: Optional[str] = Form(None),
+    session: Session = Depends(get_session)
+):
+    """Save business information from setup wizard"""
+    try:
+        setting_repo = SettingRepo(session)
+        
+        # Save business settings
+        setting_repo.set("business_name", business_name, "business")
+        if business_phone:
+            setting_repo.set("business_phone", business_phone, "business")
+        if business_email:
+            setting_repo.set("business_email", business_email, "business")
+        setting_repo.set("business_timezone", business_timezone, "business")
+        if business_address:
+            setting_repo.set("business_address", business_address, "business")
+        if hours_mon_fri:
+            setting_repo.set("hours_mon_fri", hours_mon_fri, "business")
+        if hours_sat:
+            setting_repo.set("hours_sat", hours_sat, "business")
+        if hours_sun:
+            setting_repo.set("hours_sun", hours_sun, "business")
+        
+        return {"success": True, "message": "Business information saved"}
+    
+    except Exception as e:
+        logger.error(f"Error saving business info: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/setup/ai")
+async def setup_ai(
+    ai_mode: str = Form(...),
+    openai_api_key: Optional[str] = Form(None),
+    groq_api_key: Optional[str] = Form(None),
+    gemini_api_key: Optional[str] = Form(None),
+    response_tone: str = Form("amigable"),
+    session: Session = Depends(get_session)
+):
+    """Save AI configuration from setup wizard"""
+    try:
+        setting_repo = SettingRepo(session)
+        
+        # Save AI settings
+        setting_repo.set("ai_mode", ai_mode, "ai")
+        setting_repo.set("response_tone", response_tone, "ai")
+        
+        # Save API keys if provided
+        if openai_api_key:
+            setting_repo.set("openai_api_key", openai_api_key, "ai", is_secret=True)
+        if groq_api_key:
+            setting_repo.set("groq_api_key", groq_api_key, "ai", is_secret=True)
+        if gemini_api_key:
+            setting_repo.set("gemini_api_key", gemini_api_key, "ai", is_secret=True)
+        
+        return {"success": True, "message": "AI configuration saved"}
+    
+    except Exception as e:
+        logger.error(f"Error saving AI config: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/setup/knowledge")
+async def setup_knowledge(
+    request: SetupKnowledgeRequest,
+    session: Session = Depends(get_session)
+):
+    """Save knowledge base from setup wizard"""
+    try:
+        faq_repo = FAQRepo(session)
+        product_repo = ProductRepo(session)
+        
+        # Save FAQs
+        for faq_data in request.faqs:
+            if faq_data.get("question") and faq_data.get("answer"):
+                faq = FAQ(
+                    question=faq_data["question"],
+                    answer=faq_data["answer"]
+                )
+                faq_repo.create(faq)
+        
+        # Save menu items
+        for item_data in request.menu:
+            if item_data.get("name"):
+                product = Product(
+                    name=item_data["name"],
+                    price=float(item_data.get("price", 0)),
+                    description=item_data.get("description", "")
+                )
+                product_repo.create(product)
+        
+        return {"success": True, "message": "Knowledge base saved"}
+    
+    except Exception as e:
+        logger.error(f"Error saving knowledge base: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/setup/channels")
+async def setup_channels(
+    twilio_account_sid: Optional[str] = Form(None),
+    twilio_auth_token: Optional[str] = Form(None),
+    twilio_whatsapp_from: Optional[str] = Form(None),
+    telegram_bot_token: Optional[str] = Form(None),
+    session: Session = Depends(get_session)
+):
+    """Save channel configuration from setup wizard"""
+    try:
+        setting_repo = SettingRepo(session)
+        
+        # Save WhatsApp/Twilio settings
+        if twilio_account_sid:
+            setting_repo.set("twilio_account_sid", twilio_account_sid, "channels", is_secret=True)
+        if twilio_auth_token:
+            setting_repo.set("twilio_auth_token", twilio_auth_token, "channels", is_secret=True)
+        if twilio_whatsapp_from:
+            setting_repo.set("twilio_whatsapp_from", twilio_whatsapp_from, "channels")
+        
+        # Save Telegram settings
+        if telegram_bot_token:
+            setting_repo.set("telegram_bot_token", telegram_bot_token, "channels", is_secret=True)
+        
+        # Mark setup as completed
+        setting_repo.set("setup_completed", "true", "general")
+        
+        return {"success": True, "message": "Channel configuration saved"}
+    
+    except Exception as e:
+        logger.error(f"Error saving channel config: {e}")
+        raise HTTPException(status_code=500, detail=str(e))

@@ -125,22 +125,14 @@
                     <!-- Order Items -->
                     <div class="bg-gray-50 p-4 rounded-lg mb-4">
                         <h4 class="font-semibold mb-2">Productos Solicitados</h4>
-                        {% set items = order.items_json | from_json %}
-                        {% if items %}
-                            {% for item in items %}
-                            <div class="flex justify-between py-1">
-                                <span>{{ item.qty }}x {{ item.name }}</span>
-                                <span class="font-medium">${{ "%.2f"|format(item.price * item.qty) }}</span>
+                        <p class="text-gray-600">{{ order.items_json }}</p>
+                        {% if order.total > 0 %}
+                        <div class="border-t pt-2 mt-2">
+                            <div class="flex justify-between font-semibold">
+                                <span>Total:</span>
+                                <span>${{ "%.2f"|format(order.total) }}</span>
                             </div>
-                            {% endfor %}
-                            <div class="border-t pt-2 mt-2">
-                                <div class="flex justify-between font-semibold">
-                                    <span>Total:</span>
-                                    <span>${{ "%.2f"|format(order.total) }}</span>
-                                </div>
-                            </div>
-                        {% else %}
-                            <p class="text-gray-600">Información de pedido: {{ order.items_json }}</p>
+                        </div>
                         {% endif %}
                     </div>
                     
@@ -262,7 +254,5 @@ function refreshOrders() {
 }
 </script>
 
-<!-- Custom filter for parsing JSON in Jinja2 -->
-{% set from_json = {"from_json": lambda x: x | replace("'", '"') | from_json} %}
 
 {% endblock %}

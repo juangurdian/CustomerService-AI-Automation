@@ -12,7 +12,7 @@ from app.deps import get_session
 from app.db.repo import MessageRepo, FAQRepo, ProductRepo, OrderRepo, DocRepo
 from app.db.models import FAQ, Product, Order, Doc
 from app.services.rag import rag_service
-from app.settings import config
+from app.settings import config, settings, get_dynamic_config
 
 logger = structlog.get_logger()
 router = APIRouter()
@@ -38,7 +38,22 @@ async def admin_dashboard(request: Request, session: Session = Depends(get_sessi
     
     return templates.TemplateResponse(
         "admin/dashboard.html",
-        {"request": request, "config": config, "stats": stats}
+        {"request": request, "config": get_dynamic_config(), "stats": stats}
+    )
+
+
+@router.get("/admin/setup", response_class=HTMLResponse)
+async def setup_wizard(request: Request, session: Session = Depends(get_session)):
+    """Setup wizard page"""
+    from app.db.repo import SettingRepo
+    
+    # Check if setup is already completed
+    setting_repo = SettingRepo(session)
+    setup_completed = setting_repo.get_value("setup_completed", "false")
+    
+    return templates.TemplateResponse(
+        "admin/setup_wizard.html",
+        {"request": request, "config": get_dynamic_config(), "setup_completed": setup_completed == "true"}
     )
 
 
@@ -57,7 +72,7 @@ async def onboarding(request: Request):
     
     return templates.TemplateResponse(
         "admin/onboarding.html",
-        {"request": request, "config": config, "checks": checks}
+        {"request": request, "config": get_dynamic_config(), "checks": checks}
     )
 
 
@@ -72,7 +87,7 @@ async def knowledge_management(request: Request, session: Session = Depends(get_
     
     return templates.TemplateResponse(
         "admin/knowledge.html",
-        {"request": request, "config": config, "faqs": faqs, "docs": docs}
+        {"request": request, "config": get_dynamic_config(), "faqs": faqs, "docs": docs}
     )
 
 
@@ -128,7 +143,7 @@ async def menu_management(request: Request, session: Session = Depends(get_sessi
     
     return templates.TemplateResponse(
         "admin/menu.html",
-        {"request": request, "config": config, "products": products}
+        {"request": request, "config": get_dynamic_config(), "products": products}
     )
 
 
@@ -137,7 +152,7 @@ async def playground(request: Request):
     """Chat testing playground"""
     return templates.TemplateResponse(
         "admin/playground.html",
-        {"request": request, "config": config}
+        {"request": request, "config": get_dynamic_config()}
     )
 
 
@@ -149,7 +164,7 @@ async def orders_management(request: Request, session: Session = Depends(get_ses
     
     return templates.TemplateResponse(
         "admin/orders.html",
-        {"request": request, "config": config, "orders": orders}
+        {"request": request, "config": get_dynamic_config(), "orders": orders}
     )
 
 
@@ -167,7 +182,7 @@ async def channels_management(request: Request):
     
     return templates.TemplateResponse(
         "admin/channels.html",
-        {"request": request, "config": config, "channel_status": channel_status}
+        {"request": request, "config": get_dynamic_config(), "channel_status": channel_status}
     )
 
 
@@ -207,7 +222,7 @@ async def analytics(request: Request, session: Session = Depends(get_session)):
     
     return templates.TemplateResponse(
         "admin/analytics.html",
-        {"request": request, "config": config, "analytics": analytics_data}
+        {"request": request, "config": get_dynamic_config(), "analytics": analytics_data}
     )
 
 
@@ -227,7 +242,7 @@ async def settings_page(request: Request):
     
     return templates.TemplateResponse(
         "admin/settings.html",
-        {"request": request, "config": config, "settings": safe_settings}
+        {"request": request, "config": get_dynamic_config(), "settings": safe_settings}
     )
 
 
@@ -253,5 +268,5 @@ async def chat_demo(request: Request):
     """Public chat demo page"""
     return templates.TemplateResponse(
         "chat_demo.html",
-        {"request": request, "config": config}
+        {"request": request, "config": get_dynamic_config()}
     )

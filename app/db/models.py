@@ -61,6 +61,16 @@ class Doc(SQLModel, table=True):
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
 
+class Setting(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    key: str = Field(unique=True)
+    value: Optional[str] = None
+    category: str = "general"  # business, ai, channels, etc.
+    is_secret: bool = False  # Para API keys y passwords
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: Optional[datetime] = None
+
+
 def create_db_and_tables():
     engine = create_engine(
         settings.database_url,

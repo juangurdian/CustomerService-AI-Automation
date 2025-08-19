@@ -1,0 +1,521 @@
+{% extends "base.html" %}
+
+{% block title %}Configuración Inicial{% endblock %}
+
+{% block content %}
+<div class="mb-8">
+    <h1 class="text-3xl font-bold text-gray-900 mb-2">🚀 Configuración Inicial</h1>
+    <p class="text-gray-600">Configura tu asistente virtual en simples pasos</p>
+</div>
+
+<!-- Progress Indicator -->
+<div class="mb-8">
+    <div class="flex items-center justify-between text-sm text-gray-600 mb-2">
+        <span>Progreso de configuración</span>
+        <span id="progress-text">0/4 completado</span>
+    </div>
+    <div class="w-full bg-gray-200 rounded-full h-2">
+        <div id="progress-bar" class="bg-blue-600 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+    </div>
+</div>
+
+<!-- Setup Steps -->
+<div class="space-y-6">
+    <!-- Step 1: Business Information -->
+    <div class="bg-white p-6 rounded-xl shadow-sm step-card" id="step-1">
+        <div class="flex items-center mb-6">
+            <div class="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center mr-4">1</div>
+            <div>
+                <h3 class="text-lg font-semibold">Información del Negocio</h3>
+                <p class="text-gray-600">Datos básicos de tu empresa</p>
+            </div>
+        </div>
+        
+        <form id="business-form" class="grid md:grid-cols-2 gap-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Nombre del Negocio *</label>
+                <input type="text" name="business_name" placeholder="Ej: Mi Restaurante" 
+                       class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Teléfono</label>
+                <input type="tel" name="business_phone" placeholder="+505-xxxx-xxxx"
+                       class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                <input type="email" name="business_email" placeholder="contacto@minegocio.com"
+                       class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Zona Horaria</label>
+                <select name="business_timezone" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="America/Mexico_City">Ciudad de México (GMT-6)</option>
+                    <option value="America/Managua">Managua (GMT-6)</option>
+                    <option value="America/Guatemala">Guatemala (GMT-6)</option>
+                    <option value="America/Tegucigalpa">Tegucigalpa (GMT-6)</option>
+                    <option value="America/San_Jose">San José (GMT-6)</option>
+                    <option value="America/Bogota">Bogotá (GMT-5)</option>
+                    <option value="America/Lima">Lima (GMT-5)</option>
+                    <option value="America/Argentina/Buenos_Aires">Buenos Aires (GMT-3)</option>
+                </select>
+            </div>
+            
+            <div class="md:col-span-2">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Dirección</label>
+                <input type="text" name="business_address" placeholder="Calle Principal #123, Ciudad"
+                       class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            
+            <div class="md:col-span-2">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Horarios de Atención</label>
+                <div class="grid md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="text-xs text-gray-600">Lunes a Viernes</label>
+                        <input type="text" name="hours_mon_fri" placeholder="8:00-18:00"
+                               class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="text-xs text-gray-600">Sábado</label>
+                        <input type="text" name="hours_sat" placeholder="9:00-14:00"
+                               class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="text-xs text-gray-600">Domingo</label>
+                        <input type="text" name="hours_sun" placeholder="cerrado"
+                               class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="md:col-span-2 flex justify-end">
+                <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700">
+                    Guardar y Continuar
+                </button>
+            </div>
+        </form>
+    </div>
+    
+    <!-- Step 2: AI Configuration -->
+    <div class="bg-white p-6 rounded-xl shadow-sm step-card opacity-50" id="step-2">
+        <div class="flex items-center mb-6">
+            <div class="w-8 h-8 bg-gray-400 text-white rounded-full flex items-center justify-center mr-4">2</div>
+            <div>
+                <h3 class="text-lg font-semibold">Configuración de IA</h3>
+                <p class="text-gray-600">Configura cómo responderá tu asistente</p>
+            </div>
+        </div>
+        
+        <form id="ai-form" class="space-y-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Modo de IA</label>
+                <select name="ai_mode" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="rag_only">Solo Base de Conocimiento (Gratuito)</option>
+                    <option value="api_llm">IA Externa (OpenAI/Groq)</option>
+                    <option value="local_llm">IA Local (Ollama)</option>
+                </select>
+                <p class="text-xs text-gray-600 mt-1">Recomendado: Empezar con "Solo Base de Conocimiento"</p>
+            </div>
+            
+            <!-- API Keys Section -->
+            <div id="api-keys-section" class="hidden">
+                <h4 class="font-semibold text-gray-800 mb-3">API Keys (Opcional)</h4>
+                <div class="grid md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">OpenAI API Key</label>
+                        <input type="password" name="openai_api_key" placeholder="sk-..."
+                               class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <p class="text-xs text-gray-600 mt-1">Para usar GPT-4, ChatGPT, etc.</p>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Groq API Key</label>
+                        <input type="password" name="groq_api_key" placeholder="gsk_..."
+                               class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <p class="text-xs text-gray-600 mt-1">Para Llama, Mixtral (más rápido)</p>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Google Gemini API Key</label>
+                        <input type="password" name="gemini_api_key" placeholder="AIza..."
+                               class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <p class="text-xs text-gray-600 mt-1">Para usar Gemini Pro</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Tono de Respuesta</label>
+                <select name="response_tone" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="amigable">Amigable y cercano</option>
+                    <option value="profesional">Profesional</option>
+                    <option value="casual">Casual</option>
+                    <option value="formal">Formal</option>
+                </select>
+            </div>
+            
+            <div class="flex justify-end">
+                <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700">
+                    Guardar y Continuar
+                </button>
+            </div>
+        </form>
+    </div>
+    
+    <!-- Step 3: Knowledge Base -->
+    <div class="bg-white p-6 rounded-xl shadow-sm step-card opacity-50" id="step-3">
+        <div class="flex items-center mb-6">
+            <div class="w-8 h-8 bg-gray-400 text-white rounded-full flex items-center justify-center mr-4">3</div>
+            <div>
+                <h3 class="text-lg font-semibold">Base de Conocimiento</h3>
+                <p class="text-gray-600">Agrega FAQs y información del menú</p>
+            </div>
+        </div>
+        
+        <div class="space-y-6">
+            <!-- Quick FAQ Creator -->
+            <div>
+                <h4 class="font-semibold text-gray-800 mb-3">Preguntas Frecuentes</h4>
+                <div id="faq-list" class="space-y-3">
+                    <!-- FAQs will be added here dynamically -->
+                </div>
+                
+                <button type="button" onclick="addFAQ()" class="mt-3 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 text-sm">
+                    + Agregar FAQ
+                </button>
+            </div>
+            
+            <!-- Quick Menu Creator -->
+            <div>
+                <h4 class="font-semibold text-gray-800 mb-3">Productos/Servicios</h4>
+                <div id="menu-list" class="space-y-3">
+                    <!-- Menu items will be added here -->
+                </div>
+                
+                <button type="button" onclick="addMenuItem()" class="mt-3 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 text-sm">
+                    + Agregar Producto
+                </button>
+            </div>
+            
+            <div class="flex justify-end">
+                <button type="button" onclick="saveKnowledgeBase()" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700">
+                    Guardar y Continuar
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Step 4: Channels (Optional) -->
+    <div class="bg-white p-6 rounded-xl shadow-sm step-card opacity-50" id="step-4">
+        <div class="flex items-center mb-6">
+            <div class="w-8 h-8 bg-gray-400 text-white rounded-full flex items-center justify-center mr-4">4</div>
+            <div>
+                <h3 class="text-lg font-semibold">Canales de Comunicación</h3>
+                <p class="text-gray-600">Configura WhatsApp y Telegram (opcional)</p>
+            </div>
+        </div>
+        
+        <form id="channels-form" class="space-y-6">
+            <!-- WhatsApp Configuration -->
+            <div>
+                <h4 class="font-semibold text-gray-800 mb-3">📱 WhatsApp</h4>
+                <div class="grid md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Twilio Account SID</label>
+                        <input type="text" name="twilio_account_sid" placeholder="ACxxxx..."
+                               class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Twilio Auth Token</label>
+                        <input type="password" name="twilio_auth_token" placeholder="Token secreto"
+                               class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Número de WhatsApp</label>
+                        <input type="text" name="twilio_whatsapp_from" placeholder="whatsapp:+14155238886"
+                               class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Telegram Configuration -->
+            <div>
+                <h4 class="font-semibold text-gray-800 mb-3">✈️ Telegram</h4>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Bot Token</label>
+                    <input type="password" name="telegram_bot_token" placeholder="123456:ABC-DEF..."
+                           class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <p class="text-xs text-gray-600 mt-1">Obtén tu token hablando con @BotFather en Telegram</p>
+                </div>
+            </div>
+            
+            <div class="flex justify-between">
+                <button type="button" onclick="skipChannels()" class="bg-gray-600 text-white px-6 py-2 rounded-lg hover:bg-gray-700">
+                    Omitir por Ahora
+                </button>
+                <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700">
+                    Guardar y Finalizar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Success Message -->
+<div id="setup-complete" class="hidden bg-green-50 border border-green-200 p-6 rounded-xl">
+    <div class="text-center">
+        <div class="text-6xl mb-4">🎉</div>
+        <h2 class="text-2xl font-bold text-green-800 mb-2">¡Configuración Completa!</h2>
+        <p class="text-green-700 mb-6">Tu asistente virtual está listo para usar</p>
+        
+        <div class="flex justify-center space-x-4">
+            <a href="/admin/playground" class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700">
+                🧪 Probar Bot
+            </a>
+            <a href="/demo" target="_blank" class="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700">
+                💬 Ver Demo
+            </a>
+            <a href="/admin" class="bg-gray-600 text-white px-6 py-3 rounded-lg hover:bg-gray-700">
+                🏠 Ir al Dashboard
+            </a>
+        </div>
+    </div>
+</div>
+
+<script>
+let currentStep = 1;
+let completedSteps = 0;
+
+// Initialize
+document.addEventListener('DOMContentLoaded', function() {
+    updateProgress();
+    
+    // Add change listener to AI mode
+    document.querySelector('select[name="ai_mode"]').addEventListener('change', function() {
+        const apiKeysSection = document.getElementById('api-keys-section');
+        if (this.value === 'api_llm') {
+            apiKeysSection.classList.remove('hidden');
+        } else {
+            apiKeysSection.classList.add('hidden');
+        }
+    });
+});
+
+// Form handlers
+document.getElementById('business-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    await saveBusinessInfo();
+});
+
+document.getElementById('ai-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    await saveAIConfig();
+});
+
+document.getElementById('channels-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    await saveChannelsConfig();
+});
+
+async function saveBusinessInfo() {
+    const form = document.getElementById('business-form');
+    const formData = new FormData(form);
+    
+    try {
+        const response = await fetch('/api/setup/business', {
+            method: 'POST',
+            body: formData
+        });
+        
+        if (response.ok) {
+            completeStep(1);
+            activateStep(2);
+        } else {
+            alert('Error al guardar la información del negocio');
+        }
+    } catch (error) {
+        alert('Error: ' + error.message);
+    }
+}
+
+async function saveAIConfig() {
+    const form = document.getElementById('ai-form');
+    const formData = new FormData(form);
+    
+    try {
+        const response = await fetch('/api/setup/ai', {
+            method: 'POST',
+            body: formData
+        });
+        
+        if (response.ok) {
+            completeStep(2);
+            activateStep(3);
+        } else {
+            alert('Error al guardar la configuración de IA');
+        }
+    } catch (error) {
+        alert('Error: ' + error.message);
+    }
+}
+
+async function saveKnowledgeBase() {
+    const faqs = collectFAQs();
+    const menu = collectMenuItems();
+    
+    try {
+        const response = await fetch('/api/setup/knowledge', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ faqs, menu })
+        });
+        
+        if (response.ok) {
+            completeStep(3);
+            activateStep(4);
+        } else {
+            alert('Error al guardar la base de conocimiento');
+        }
+    } catch (error) {
+        alert('Error: ' + error.message);
+    }
+}
+
+async function saveChannelsConfig() {
+    const form = document.getElementById('channels-form');
+    const formData = new FormData(form);
+    
+    try {
+        const response = await fetch('/api/setup/channels', {
+            method: 'POST',
+            body: formData
+        });
+        
+        if (response.ok) {
+            completeStep(4);
+            showSuccess();
+        } else {
+            alert('Error al guardar la configuración de canales');
+        }
+    } catch (error) {
+        alert('Error: ' + error.message);
+    }
+}
+
+function skipChannels() {
+    completeStep(4);
+    showSuccess();
+}
+
+function completeStep(step) {
+    const stepCard = document.getElementById(`step-${step}`);
+    const stepCircle = stepCard.querySelector('.w-8.h-8');
+    
+    stepCircle.classList.remove('bg-gray-400', 'bg-blue-600');
+    stepCircle.classList.add('bg-green-500');
+    stepCircle.innerHTML = '✓';
+    
+    completedSteps++;
+    updateProgress();
+}
+
+function activateStep(step) {
+    const stepCard = document.getElementById(`step-${step}`);
+    const stepCircle = stepCard.querySelector('.w-8.h-8');
+    
+    stepCard.classList.remove('opacity-50');
+    stepCircle.classList.remove('bg-gray-400');
+    stepCircle.classList.add('bg-blue-600');
+    
+    currentStep = step;
+}
+
+function updateProgress() {
+    const progressBar = document.getElementById('progress-bar');
+    const progressText = document.getElementById('progress-text');
+    
+    const percentage = (completedSteps / 4) * 100;
+    progressBar.style.width = percentage + '%';
+    progressText.textContent = `${completedSteps}/4 completado`;
+}
+
+function showSuccess() {
+    document.querySelector('.space-y-6').classList.add('hidden');
+    document.getElementById('setup-complete').classList.remove('hidden');
+}
+
+// FAQ Management
+function addFAQ() {
+    const faqList = document.getElementById('faq-list');
+    const faqItem = document.createElement('div');
+    faqItem.className = 'bg-gray-50 p-4 rounded-lg';
+    faqItem.innerHTML = `
+        <div class="grid md:grid-cols-2 gap-3">
+            <input type="text" placeholder="¿Pregunta?" class="faq-question w-full border border-gray-300 rounded px-3 py-2">
+            <input type="text" placeholder="Respuesta" class="faq-answer w-full border border-gray-300 rounded px-3 py-2">
+        </div>
+        <button onclick="this.parentElement.remove()" class="mt-2 text-red-600 hover:text-red-800 text-sm">Eliminar</button>
+    `;
+    faqList.appendChild(faqItem);
+}
+
+function addMenuItem() {
+    const menuList = document.getElementById('menu-list');
+    const menuItem = document.createElement('div');
+    menuItem.className = 'bg-gray-50 p-4 rounded-lg';
+    menuItem.innerHTML = `
+        <div class="grid md:grid-cols-3 gap-3">
+            <input type="text" placeholder="Nombre del producto" class="menu-name w-full border border-gray-300 rounded px-3 py-2">
+            <input type="number" step="0.01" placeholder="Precio" class="menu-price w-full border border-gray-300 rounded px-3 py-2">
+            <input type="text" placeholder="Descripción" class="menu-description w-full border border-gray-300 rounded px-3 py-2">
+        </div>
+        <button onclick="this.parentElement.remove()" class="mt-2 text-red-600 hover:text-red-800 text-sm">Eliminar</button>
+    `;
+    menuList.appendChild(menuItem);
+}
+
+function collectFAQs() {
+    const faqs = [];
+    document.querySelectorAll('#faq-list > div').forEach(item => {
+        const question = item.querySelector('.faq-question').value.trim();
+        const answer = item.querySelector('.faq-answer').value.trim();
+        if (question && answer) {
+            faqs.push({ question, answer });
+        }
+    });
+    return faqs;
+}
+
+function collectMenuItems() {
+    const menu = [];
+    document.querySelectorAll('#menu-list > div').forEach(item => {
+        const name = item.querySelector('.menu-name').value.trim();
+        const price = parseFloat(item.querySelector('.menu-price').value) || 0;
+        const description = item.querySelector('.menu-description').value.trim();
+        if (name) {
+            menu.push({ name, price, description });
+        }
+    });
+    return menu;
+}
+
+// Add some initial examples
+document.addEventListener('DOMContentLoaded', function() {
+    // Add example FAQ
+    addFAQ();
+    document.querySelector('.faq-question').value = "¿Cuáles son sus horarios?";
+    document.querySelector('.faq-answer').value = "Abrimos de lunes a viernes de 8am a 6pm";
+    
+    // Add example menu item
+    addMenuItem();
+    const firstMenuItem = document.querySelector('#menu-list > div');
+    firstMenuItem.querySelector('.menu-name').value = "Hamburguesa Clásica";
+    firstMenuItem.querySelector('.menu-price').value = "8.50";
+    firstMenuItem.querySelector('.menu-description').value = "Carne, lechuga, tomate y salsa especial";
+});
+</script>
+
+{% endblock %}
