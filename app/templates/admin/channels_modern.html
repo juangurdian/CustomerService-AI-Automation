@@ -1,0 +1,431 @@
+{% extends "base_modern.html" %}
+
+{% block title %}Configuración de Canales - {{ config.business.name }}{% endblock %}
+{% block page_title %}Configuración de Canales{% endblock %}
+{% block page_subtitle %}Integra y configura todos los canales de comunicación para tu asistente virtual{% endblock %}
+
+{% block content %}
+<div class="p-6 space-y-6">
+    <!-- Channel Status Overview -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="bg-white/80 backdrop-blur-lg rounded-2xl p-6 border border-gray-200/50 shadow-lg">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-600 mb-1">Web Chat</p>
+                    <p class="text-2xl font-bold text-green-600">Activo</p>
+                </div>
+                <div class="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center">
+                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white/80 backdrop-blur-lg rounded-2xl p-6 border border-gray-200/50 shadow-lg">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-600 mb-1">WhatsApp</p>
+                    <p class="text-2xl font-bold {{ 'text-green-600' if channel_status.whatsapp_twilio or channel_status.whatsapp_cloud else 'text-gray-400' }}">
+                        {{ 'Configurado' if channel_status.whatsapp_twilio or channel_status.whatsapp_cloud else 'Pendiente' }}
+                    </p>
+                </div>
+                <div class="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center">
+                    <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0020.885 3.488"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white/80 backdrop-blur-lg rounded-2xl p-6 border border-gray-200/50 shadow-lg">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-600 mb-1">Telegram</p>
+                    <p class="text-2xl font-bold {{ 'text-green-600' if channel_status.telegram else 'text-gray-400' }}">
+                        {{ 'Configurado' if channel_status.telegram else 'Pendiente' }}
+                    </p>
+                </div>
+                <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center">
+                    <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Web Chat Configuration -->
+    <div class="bg-white/80 backdrop-blur-lg rounded-2xl p-6 border border-gray-200/50 shadow-lg">
+        <div class="flex items-center justify-between mb-6">
+            <div class="flex items-center space-x-3">
+                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center">
+                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                    </svg>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold text-gray-900">Chat Web</h3>
+                    <p class="text-sm text-gray-600">Widget embebible para tu sitio web</p>
+                </div>
+            </div>
+            <span class="bg-green-100 text-green-800 px-4 py-2 rounded-full text-sm font-medium">✅ Activo</span>
+        </div>
+        
+        <div class="bg-gray-50 rounded-xl p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h4 class="font-semibold text-gray-900">Código de Integración</h4>
+                <button onclick="copyWebCode()" class="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                    </svg>
+                    Copiar Código
+                </button>
+            </div>
+            <div class="bg-gray-900 rounded-lg p-4 overflow-x-auto">
+                <code class="text-green-400 text-sm font-mono" id="web-code">
+&lt;script src="{{ request.url.scheme }}://{{ request.url.netloc }}/widget/widget.js" defer&gt;&lt;/script&gt;
+                </code>
+            </div>
+        </div>
+        
+        <div class="mt-6 flex justify-between items-center">
+            <a href="/demo" target="_blank" class="flex items-center text-blue-600 hover:text-blue-700 font-medium">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                </svg>
+                Ver Demo del Chat Web
+            </a>
+        </div>
+    </div>
+
+    <!-- WhatsApp Configuration -->
+    <div class="bg-white/80 backdrop-blur-lg rounded-2xl p-6 border border-gray-200/50 shadow-lg">
+        <div class="flex items-center justify-between mb-6">
+            <div class="flex items-center space-x-3">
+                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center">
+                    <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0020.885 3.488"/>
+                    </svg>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold text-gray-900">WhatsApp Business</h3>
+                    <p class="text-sm text-gray-600">Conecta tu bot con WhatsApp para llegar a más clientes</p>
+                </div>
+            </div>
+            <span class="bg-{{ 'green' if channel_status.whatsapp_twilio or channel_status.whatsapp_cloud else 'yellow' }}-100 text-{{ 'green' if channel_status.whatsapp_twilio or channel_status.whatsapp_cloud else 'yellow' }}-800 px-4 py-2 rounded-full text-sm font-medium">
+                {{ '✅ Configurado' if channel_status.whatsapp_twilio or channel_status.whatsapp_cloud else '⏳ Pendiente' }}
+            </span>
+        </div>
+        
+        <div class="space-y-6">
+            <!-- Twilio Option -->
+            <div class="border border-gray-200 rounded-xl p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <h4 class="text-lg font-semibold text-gray-900">Opción 1: Twilio</h4>
+                        <p class="text-sm text-gray-600">Más fácil de configurar, ideal para comenzar</p>
+                    </div>
+                    <div class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">Recomendado</div>
+                </div>
+                
+                {% if channel_status.whatsapp_twilio %}
+                <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+                    <div class="flex items-center mb-2">
+                        <svg class="w-5 h-5 text-green-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <p class="font-medium text-green-800">Twilio configurado correctamente</p>
+                    </div>
+                    <p class="text-sm text-green-700 font-mono bg-green-100 p-2 rounded">
+                        Webhook: {{ request.url.scheme }}://{{ request.url.netloc }}/webhook/twilio
+                    </p>
+                </div>
+                {% else %}
+                <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                    <div class="flex items-center mb-3">
+                        <svg class="w-5 h-5 text-yellow-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.96-.833-2.732 0L3.082 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                        </svg>
+                        <p class="font-medium text-yellow-800">Configura estas variables en tu .env:</p>
+                    </div>
+                    <div class="space-y-2 text-sm">
+                        <div class="flex items-center justify-between bg-yellow-100 p-2 rounded">
+                            <code class="text-yellow-800">TWILIO_ACCOUNT_SID</code>
+                            <span class="text-yellow-600">Requerido</span>
+                        </div>
+                        <div class="flex items-center justify-between bg-yellow-100 p-2 rounded">
+                            <code class="text-yellow-800">TWILIO_AUTH_TOKEN</code>
+                            <span class="text-yellow-600">Requerido</span>
+                        </div>
+                        <div class="flex items-center justify-between bg-yellow-100 p-2 rounded">
+                            <code class="text-yellow-800">TWILIO_WHATSAPP_FROM</code>
+                            <span class="text-yellow-600">Requerido</span>
+                        </div>
+                    </div>
+                    <p class="text-sm text-yellow-700 mt-3 font-mono bg-yellow-100 p-2 rounded">
+                        Webhook: {{ request.url.scheme }}://{{ request.url.netloc }}/webhook/twilio
+                    </p>
+                </div>
+                {% endif %}
+            </div>
+            
+            <!-- Cloud API Option -->
+            <div class="border border-gray-200 rounded-xl p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <h4 class="text-lg font-semibold text-gray-900">Opción 2: WhatsApp Cloud API</h4>
+                        <p class="text-sm text-gray-600">API oficial de Meta, más control avanzado</p>
+                    </div>
+                    <div class="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm font-medium">Avanzado</div>
+                </div>
+                
+                {% if channel_status.whatsapp_cloud %}
+                <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+                    <div class="flex items-center mb-2">
+                        <svg class="w-5 h-5 text-green-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <p class="font-medium text-green-800">WhatsApp Cloud API configurado</p>
+                    </div>
+                    <p class="text-sm text-green-700 font-mono bg-green-100 p-2 rounded">
+                        Webhook: {{ request.url.scheme }}://{{ request.url.netloc }}/webhook/whatsapp
+                    </p>
+                </div>
+                {% else %}
+                <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                    <div class="flex items-center mb-3">
+                        <svg class="w-5 h-5 text-yellow-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.96-.833-2.732 0L3.082 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                        </svg>
+                        <p class="font-medium text-yellow-800">Configura estas variables en tu .env:</p>
+                    </div>
+                    <div class="space-y-2 text-sm">
+                        <div class="flex items-center justify-between bg-yellow-100 p-2 rounded">
+                            <code class="text-yellow-800">WHATSAPP_TOKEN</code>
+                            <span class="text-yellow-600">Requerido</span>
+                        </div>
+                        <div class="flex items-center justify-between bg-yellow-100 p-2 rounded">
+                            <code class="text-yellow-800">PHONE_NUMBER_ID</code>
+                            <span class="text-yellow-600">Requerido</span>
+                        </div>
+                        <div class="flex items-center justify-between bg-yellow-100 p-2 rounded">
+                            <code class="text-yellow-800">VERIFY_TOKEN</code>
+                            <span class="text-yellow-600">Requerido</span>
+                        </div>
+                    </div>
+                    <p class="text-sm text-yellow-700 mt-3 font-mono bg-yellow-100 p-2 rounded">
+                        Webhook: {{ request.url.scheme }}://{{ request.url.netloc }}/webhook/whatsapp
+                    </p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Telegram Configuration -->
+    <div class="bg-white/80 backdrop-blur-lg rounded-2xl p-6 border border-gray-200/50 shadow-lg">
+        <div class="flex items-center justify-between mb-6">
+            <div class="flex items-center space-x-3">
+                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center">
+                    <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
+                    </svg>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold text-gray-900">Telegram Bot</h3>
+                    <p class="text-sm text-gray-600">Bot de Telegram para atención al cliente</p>
+                </div>
+            </div>
+            <span class="bg-{{ 'green' if channel_status.telegram else 'yellow' }}-100 text-{{ 'green' if channel_status.telegram else 'yellow' }}-800 px-4 py-2 rounded-full text-sm font-medium">
+                {{ '✅ Configurado' if channel_status.telegram else '⏳ Pendiente' }}
+            </span>
+        </div>
+        
+        {% if channel_status.telegram %}
+        <div class="bg-green-50 border border-green-200 rounded-lg p-6">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                    <svg class="w-5 h-5 text-green-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <p class="font-medium text-green-800">Bot de Telegram configurado correctamente</p>
+                </div>
+                <button onclick="setTelegramWebhook()" class="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                    </svg>
+                    Configurar Webhook
+                </button>
+            </div>
+        </div>
+        {% else %}
+        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
+            <div class="flex items-center mb-4">
+                <svg class="w-5 h-5 text-yellow-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.96-.833-2.732 0L3.082 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                </svg>
+                <p class="font-medium text-yellow-800">Para configurar Telegram Bot:</p>
+            </div>
+            <div class="space-y-3">
+                <div class="flex items-center p-3 bg-yellow-100 rounded-lg">
+                    <span class="bg-yellow-200 text-yellow-800 px-2 py-1 rounded text-sm font-mono mr-3">1</span>
+                    <span class="text-yellow-800">Habla con <strong>@BotFather</strong> en Telegram</span>
+                </div>
+                <div class="flex items-center p-3 bg-yellow-100 rounded-lg">
+                    <span class="bg-yellow-200 text-yellow-800 px-2 py-1 rounded text-sm font-mono mr-3">2</span>
+                    <span class="text-yellow-800">Crea un nuevo bot con <code>/newbot</code></span>
+                </div>
+                <div class="flex items-center p-3 bg-yellow-100 rounded-lg">
+                    <span class="bg-yellow-200 text-yellow-800 px-2 py-1 rounded text-sm font-mono mr-3">3</span>
+                    <span class="text-yellow-800">Copia el token que te proporciona</span>
+                </div>
+                <div class="flex items-center p-3 bg-yellow-100 rounded-lg">
+                    <span class="bg-yellow-200 text-yellow-800 px-2 py-1 rounded text-sm font-mono mr-3">4</span>
+                    <span class="text-yellow-800">Agrega <code>TELEGRAM_BOT_TOKEN</code> en tu .env</span>
+                </div>
+                <div class="flex items-center p-3 bg-yellow-100 rounded-lg">
+                    <span class="bg-yellow-200 text-yellow-800 px-2 py-1 rounded text-sm font-mono mr-3">5</span>
+                    <span class="text-yellow-800">Reinicia la aplicación</span>
+                </div>
+            </div>
+            <p class="text-sm text-yellow-700 mt-4 font-mono bg-yellow-100 p-2 rounded">
+                Webhook: {{ request.url.scheme }}://{{ request.url.netloc }}/webhook/telegram
+            </p>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Setup Guides -->
+    <div class="bg-white/80 backdrop-blur-lg rounded-2xl p-6 border border-gray-200/50 shadow-lg">
+        <h3 class="text-xl font-bold text-gray-900 mb-6">📖 Guías de Configuración Detalladas</h3>
+        
+        <div class="space-y-4">
+            <details class="border border-gray-200 rounded-xl p-6 bg-gray-50">
+                <summary class="font-semibold cursor-pointer text-lg text-gray-900 flex items-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    </svg>
+                    Configurar Twilio WhatsApp
+                </summary>
+                <div class="mt-4 space-y-3 text-gray-600">
+                    <div class="bg-white p-4 rounded-lg border border-gray-200">
+                        <h4 class="font-medium text-gray-900 mb-2">Paso 1: Crear cuenta en Twilio</h4>
+                        <p class="text-sm">Ve a <a href="https://twilio.com" target="_blank" class="text-blue-600 underline">Twilio.com</a> y crea una cuenta gratuita</p>
+                    </div>
+                    <div class="bg-white p-4 rounded-lg border border-gray-200">
+                        <h4 class="font-medium text-gray-900 mb-2">Paso 2: Acceder al Sandbox</h4>
+                        <p class="text-sm">En la consola, ve a <strong>Console → Messaging → Try WhatsApp → Sandbox</strong></p>
+                    </div>
+                    <div class="bg-white p-4 rounded-lg border border-gray-200">
+                        <h4 class="font-medium text-gray-900 mb-2">Paso 3: Obtener credenciales</h4>
+                        <p class="text-sm">Copia tu <strong>Account SID</strong> y <strong>Auth Token</strong> desde el dashboard</p>
+                    </div>
+                    <div class="bg-white p-4 rounded-lg border border-gray-200">
+                        <h4 class="font-medium text-gray-900 mb-2">Paso 4: Configurar webhook</h4>
+                        <p class="text-sm">En el sandbox, configura el webhook: <code class="bg-gray-100 px-2 py-1 rounded">{{ request.url.scheme }}://{{ request.url.netloc }}/webhook/twilio</code></p>
+                    </div>
+                </div>
+            </details>
+            
+            <details class="border border-gray-200 rounded-xl p-6 bg-gray-50">
+                <summary class="font-semibold cursor-pointer text-lg text-gray-900 flex items-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zM21 5a2 2 0 00-2-2h-4a2 2 0 00-2 2v12a4 4 0 004 4h4a2 2 0 002-2V5z"></path>
+                    </svg>
+                    Configurar WhatsApp Cloud API
+                </summary>
+                <div class="mt-4 space-y-3 text-gray-600">
+                    <div class="bg-white p-4 rounded-lg border border-gray-200">
+                        <h4 class="font-medium text-gray-900 mb-2">Paso 1: Meta Developer Account</h4>
+                        <p class="text-sm">Ve a <a href="https://developers.facebook.com" target="_blank" class="text-blue-600 underline">Facebook Developers</a> y crea una cuenta</p>
+                    </div>
+                    <div class="bg-white p-4 rounded-lg border border-gray-200">
+                        <h4 class="font-medium text-gray-900 mb-2">Paso 2: Crear App</h4>
+                        <p class="text-sm">Crea una nueva app de tipo <strong>Business</strong> y agrega el producto <strong>WhatsApp</strong></p>
+                    </div>
+                    <div class="bg-white p-4 rounded-lg border border-gray-200">
+                        <h4 class="font-medium text-gray-900 mb-2">Paso 3: Configurar Webhook</h4>
+                        <p class="text-sm">En WhatsApp → Configuration, configura el webhook: <code class="bg-gray-100 px-2 py-1 rounded">{{ request.url.scheme }}://{{ request.url.netloc }}/webhook/whatsapp</code></p>
+                    </div>
+                    <div class="bg-white p-4 rounded-lg border border-gray-200">
+                        <h4 class="font-medium text-gray-900 mb-2">Paso 4: Obtener tokens</h4>
+                        <p class="text-sm">Copia el <strong>Access Token</strong> y <strong>Phone Number ID</strong> desde la configuración</p>
+                    </div>
+                </div>
+            </details>
+        </div>
+    </div>
+</div>
+
+<script>
+function copyWebCode() {
+    const code = document.getElementById('web-code').textContent;
+    navigator.clipboard.writeText(code).then(() => {
+        // Show success message
+        const button = event.target;
+        const originalText = button.innerHTML;
+        button.innerHTML = `
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+            </svg>
+            ¡Copiado!
+        `;
+        button.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+        button.classList.add('bg-green-600');
+        
+        setTimeout(() => {
+            button.innerHTML = originalText;
+            button.classList.remove('bg-green-600');
+            button.classList.add('bg-blue-600', 'hover:bg-blue-700');
+        }, 2000);
+    }).catch(() => {
+        alert('Error al copiar el código');
+    });
+}
+
+async function setTelegramWebhook() {
+    const webhookUrl = `${window.location.origin}/webhook/telegram`;
+    
+    const button = event.target;
+    const originalText = button.innerHTML;
+    button.innerHTML = `
+        <svg class="w-4 h-4 mr-2 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+        </svg>
+        Configurando...
+    `;
+    button.disabled = true;
+    
+    try {
+        const response = await fetch('/webhook/telegram/set-webhook', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ webhook_url: webhookUrl })
+        });
+        
+        if (response.ok) {
+            button.innerHTML = `
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+                ¡Configurado!
+            `;
+            button.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+            button.classList.add('bg-green-600');
+            
+            setTimeout(() => {
+                location.reload();
+            }, 2000);
+        } else {
+            throw new Error('Error en la respuesta del servidor');
+        }
+    } catch (error) {
+        button.innerHTML = originalText;
+        button.disabled = false;
+        alert('Error al configurar webhook: ' + error.message);
+    }
+}
+</script>
+{% endblock %}

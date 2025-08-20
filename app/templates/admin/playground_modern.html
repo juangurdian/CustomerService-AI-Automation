@@ -1,0 +1,430 @@
+{% extends "base_modern.html" %}
+
+{% block title %}Probar Bot - {{ config.business.name }}{% endblock %}
+{% block page_title %}Probar Bot{% endblock %}
+{% block page_subtitle %}Prueba y entrena tu asistente virtual en tiempo real{% endblock %}
+
+{% block content %}
+<div class="p-6 h-full">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full">
+        <!-- Chat Interface -->
+        <div class="lg:col-span-2 bg-white/80 backdrop-blur-lg rounded-2xl border border-gray-200/50 shadow-lg flex flex-col h-full">
+            <!-- Chat Header -->
+            <div class="p-6 border-b border-gray-200 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-t-2xl">
+                <div class="flex items-center justify-between text-white">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold">{{ config.business.name }}</h3>
+                            <p class="text-sm text-blue-100">Asistente Virtual - Modo Prueba</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <span class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
+                        <span class="text-sm">En línea</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Messages Container -->
+            <div class="flex-1 overflow-y-auto p-6 space-y-4" id="messages-container">
+                <!-- Welcome Message -->
+                <div class="flex justify-start">
+                    <div class="max-w-xs lg:max-w-md">
+                        <div class="bg-gray-200 text-gray-900 rounded-lg px-4 py-2">
+                            <div class="text-xs text-gray-600 mb-1">🤖 Bot</div>
+                            <p class="text-sm">¡Hola! Soy el asistente virtual de {{ config.business.name }}. ¿En qué puedo ayudarte?</p>
+                        </div>
+                        <div class="text-xs text-gray-500 mt-1">Ahora</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Message Input -->
+            <div class="p-6 border-t border-gray-200">
+                <form id="chat-form" class="flex space-x-3">
+                    <div class="flex-1">
+                        <textarea id="message-input" 
+                                rows="1" 
+                                placeholder="Escribe tu mensaje aquí..."
+                                class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                                onkeydown="handleKeyDown(event)"></textarea>
+                    </div>
+                    <button type="submit" 
+                            class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+                            id="send-button">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                        </svg>
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Controls Panel -->
+        <div class="space-y-6">
+            <!-- Quick Actions -->
+            <div class="bg-white/80 backdrop-blur-lg rounded-2xl p-6 border border-gray-200/50 shadow-lg">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Acciones Rápidas</h3>
+                <div class="space-y-3">
+                    <button onclick="clearChat()" 
+                            class="w-full flex items-center p-3 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors">
+                        <svg class="w-5 h-5 mr-3 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                        </svg>
+                        <span class="font-medium text-gray-700">Limpiar Chat</span>
+                    </button>
+                    
+                    <button onclick="exportChat()" 
+                            class="w-full flex items-center p-3 rounded-lg bg-blue-100 hover:bg-blue-200 transition-colors">
+                        <svg class="w-5 h-5 mr-3 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                        <span class="font-medium text-blue-700">Exportar Conversación</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Sample Questions -->
+            <div class="bg-white/80 backdrop-blur-lg rounded-2xl p-6 border border-gray-200/50 shadow-lg">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Preguntas de Ejemplo</h3>
+                <div class="space-y-2">
+                    <button onclick="sendSampleMessage('¿Cuáles son sus horarios?')" 
+                            class="w-full text-left p-3 rounded-lg bg-green-50 hover:bg-green-100 transition-colors border border-green-200">
+                        <span class="text-sm text-green-800">¿Cuáles son sus horarios?</span>
+                    </button>
+                    
+                    <button onclick="sendSampleMessage('¿Qué productos tienen disponibles?')" 
+                            class="w-full text-left p-3 rounded-lg bg-green-50 hover:bg-green-100 transition-colors border border-green-200">
+                        <span class="text-sm text-green-800">¿Qué productos tienen disponibles?</span>
+                    </button>
+                    
+                    <button onclick="sendSampleMessage('Quiero hacer un pedido')" 
+                            class="w-full text-left p-3 rounded-lg bg-green-50 hover:bg-green-100 transition-colors border border-green-200">
+                        <span class="text-sm text-green-800">Quiero hacer un pedido</span>
+                    </button>
+                    
+                    <button onclick="sendSampleMessage('¿Hacen entregas a domicilio?')" 
+                            class="w-full text-left p-3 rounded-lg bg-green-50 hover:bg-green-100 transition-colors border border-green-200">
+                        <span class="text-sm text-green-800">¿Hacen entregas a domicilio?</span>
+                    </button>
+                    
+                    <button onclick="sendSampleMessage('Necesito hablar con un humano')" 
+                            class="w-full text-left p-3 rounded-lg bg-yellow-50 hover:bg-yellow-100 transition-colors border border-yellow-200">
+                        <span class="text-sm text-yellow-800">Necesito hablar con un humano</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Debug Info -->
+            <div class="bg-white/80 backdrop-blur-lg rounded-2xl p-6 border border-gray-200/50 shadow-lg">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Información de Debug</h3>
+                <div id="debug-info" class="space-y-2 text-sm">
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Estado:</span>
+                        <span class="text-green-600 font-medium">Listo</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Última respuesta:</span>
+                        <span id="response-time" class="text-gray-900">-</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Fuente:</span>
+                        <span id="response-source" class="text-gray-900">-</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Intent:</span>
+                        <span id="response-intent" class="text-gray-900">-</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- System Status -->
+            <div class="bg-white/80 backdrop-blur-lg rounded-2xl p-6 border border-gray-200/50 shadow-lg">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Estado del Sistema</h3>
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm text-gray-600">Bot AI</span>
+                        <span class="flex items-center text-green-600">
+                            <span class="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
+                            Activo
+                        </span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm text-gray-600">Base de Conocimiento</span>
+                        <span class="flex items-center text-green-600">
+                            <span class="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
+                            Indexado
+                        </span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm text-gray-600">API Externa</span>
+                        <span class="flex items-center text-yellow-600">
+                            <span class="w-2 h-2 bg-yellow-500 rounded-full mr-2"></span>
+                            Opcional
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let messageCount = 0;
+
+// Initialize
+document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('chat-form').addEventListener('submit', sendMessage);
+    document.getElementById('message-input').focus();
+});
+
+async function sendMessage(event) {
+    if (event) event.preventDefault();
+    
+    const input = document.getElementById('message-input');
+    const text = input.value.trim();
+    
+    if (!text) return;
+    
+    // Add user message to chat
+    addMessageToChat(text, true);
+    
+    // Clear input and disable button
+    input.value = '';
+    document.getElementById('send-button').disabled = true;
+    
+    // Show typing indicator
+    const typingId = addTypingIndicator();
+    
+    try {
+        const startTime = Date.now();
+        
+        const response = await fetch('/api/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                channel: 'playground',
+                user_id: 'playground_user',
+                text: text
+            })
+        });
+        
+        const data = await response.json();
+        const responseTime = Date.now() - startTime;
+        
+        // Remove typing indicator
+        removeTypingIndicator(typingId);
+        
+        // Add bot response to chat
+        addMessageToChat(data.reply, false, data.trace?.source || 'unknown');
+        
+        // Update debug info
+        updateDebugInfo(responseTime, data.trace?.source, data.trace?.intent);
+        
+        // Add quick replies if any
+        if (data.quick_replies && data.quick_replies.length > 0) {
+            addQuickReplies(data.quick_replies);
+        }
+        
+    } catch (error) {
+        removeTypingIndicator(typingId);
+        addMessageToChat('Error: No se pudo conectar con el bot', false, 'error');
+        console.error('Error:', error);
+    } finally {
+        document.getElementById('send-button').disabled = false;
+        input.focus();
+    }
+}
+
+function sendSampleMessage(message) {
+    document.getElementById('message-input').value = message;
+    sendMessage();
+}
+
+function addMessageToChat(text, isUser, source = null) {
+    const container = document.getElementById('messages-container');
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `flex ${isUser ? 'justify-end' : 'justify-start'}`;
+    
+    const time = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+    
+    let sourceIcon = '';
+    let sourceColor = '';
+    if (!isUser) {
+        switch(source) {
+            case 'faq':
+                sourceIcon = '📚';
+                sourceColor = 'bg-blue-500';
+                break;
+            case 'menu':
+                sourceIcon = '🍽️';
+                sourceColor = 'bg-green-500';
+                break;
+            case 'rag':
+                sourceIcon = '🧠';
+                sourceColor = 'bg-purple-500';
+                break;
+            case 'llm':
+                sourceIcon = '🤖';
+                sourceColor = 'bg-indigo-500';
+                break;
+            case 'error':
+                sourceIcon = '❌';
+                sourceColor = 'bg-red-500';
+                break;
+            default:
+                sourceIcon = '🤖';
+                sourceColor = 'bg-gray-500';
+        }
+    }
+    
+    messageDiv.innerHTML = `
+        <div class="max-w-xs lg:max-w-md">
+            <div class="${isUser ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-900'} rounded-lg px-4 py-2">
+                ${!isUser ? `<div class="text-xs ${isUser ? 'text-blue-100' : 'text-gray-600'} mb-1">${sourceIcon} ${source ? source.toUpperCase() : 'Bot'}</div>` : ''}
+                <p class="text-sm">${escapeHtml(text)}</p>
+            </div>
+            <div class="text-xs text-gray-500 mt-1 ${isUser ? 'text-right' : 'text-left'}">
+                ${time}
+            </div>
+        </div>
+    `;
+    
+    container.appendChild(messageDiv);
+    container.scrollTop = container.scrollHeight;
+    messageCount++;
+}
+
+function addTypingIndicator() {
+    const container = document.getElementById('messages-container');
+    const typingDiv = document.createElement('div');
+    const id = 'typing-' + Date.now();
+    typingDiv.id = id;
+    typingDiv.className = 'flex justify-start';
+    
+    typingDiv.innerHTML = `
+        <div class="max-w-xs lg:max-w-md">
+            <div class="bg-gray-200 text-gray-900 rounded-lg px-4 py-2">
+                <div class="flex space-x-1">
+                    <div class="w-2 h-2 bg-gray-500 rounded-full animate-bounce"></div>
+                    <div class="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style="animation-delay: 0.1s"></div>
+                    <div class="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    container.appendChild(typingDiv);
+    container.scrollTop = container.scrollHeight;
+    
+    return id;
+}
+
+function removeTypingIndicator(id) {
+    const element = document.getElementById(id);
+    if (element) {
+        element.remove();
+    }
+}
+
+function addQuickReplies(replies) {
+    const container = document.getElementById('messages-container');
+    const repliesDiv = document.createElement('div');
+    repliesDiv.className = 'flex justify-start';
+    
+    let buttonsHtml = replies.map(reply => 
+        `<button onclick="sendSampleMessage('${escapeHtml(reply)}')" 
+                class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm hover:bg-blue-200 transition-colors">
+            ${escapeHtml(reply)}
+        </button>`
+    ).join(' ');
+    
+    repliesDiv.innerHTML = `
+        <div class="max-w-xs lg:max-w-md">
+            <div class="flex flex-wrap gap-2 mt-2">
+                ${buttonsHtml}
+            </div>
+        </div>
+    `;
+    
+    container.appendChild(repliesDiv);
+    container.scrollTop = container.scrollHeight;
+}
+
+function updateDebugInfo(responseTime, source, intent) {
+    document.getElementById('response-time').textContent = responseTime + 'ms';
+    document.getElementById('response-source').textContent = source || 'unknown';
+    document.getElementById('response-intent').textContent = intent || 'unknown';
+}
+
+function clearChat() {
+    if (confirm('¿Estás seguro que quieres limpiar el chat?')) {
+        const container = document.getElementById('messages-container');
+        container.innerHTML = `
+            <div class="flex justify-start">
+                <div class="max-w-xs lg:max-w-md">
+                    <div class="bg-gray-200 text-gray-900 rounded-lg px-4 py-2">
+                        <div class="text-xs text-gray-600 mb-1">🤖 Bot</div>
+                        <p class="text-sm">¡Hola! Soy el asistente virtual de {{ config.business.name }}. ¿En qué puedo ayudarte?</p>
+                    </div>
+                    <div class="text-xs text-gray-500 mt-1">Ahora</div>
+                </div>
+            </div>
+        `;
+        messageCount = 0;
+        document.getElementById('response-time').textContent = '-';
+        document.getElementById('response-source').textContent = '-';
+        document.getElementById('response-intent').textContent = '-';
+    }
+}
+
+function exportChat() {
+    const messages = document.querySelectorAll('#messages-container > div');
+    let chatData = 'Conversación de Prueba - ' + new Date().toLocaleString() + '\\n\\n';
+    
+    messages.forEach(msgDiv => {
+        const text = msgDiv.querySelector('p')?.textContent || '';
+        const time = msgDiv.querySelector('.text-xs')?.textContent || '';
+        const isUser = msgDiv.className.includes('justify-end');
+        
+        if (text && !text.includes('animate-bounce')) {
+            chatData += `[${time}] ${isUser ? 'Usuario' : 'Bot'}: ${text}\\n`;
+        }
+    });
+    
+    const blob = new Blob([chatData], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'chat-test-' + new Date().getTime() + '.txt';
+    a.click();
+    URL.revokeObjectURL(url);
+}
+
+function handleKeyDown(event) {
+    if (event.key === 'Enter' && !event.shiftKey) {
+        event.preventDefault();
+        sendMessage();
+    }
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+// Auto-resize textarea
+document.addEventListener('input', function(e) {
+    if (e.target.id === 'message-input') {
+        e.target.style.height = 'auto';
+        e.target.style.height = e.target.scrollHeight + 'px';
+    }
+});
+</script>
+{% endblock %}

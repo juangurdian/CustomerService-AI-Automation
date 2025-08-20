@@ -1,0 +1,511 @@
+{% extends "base_modern.html" %}
+
+{% block title %}Menú & Productos - {{ config.business.name }}{% endblock %}
+{% block page_title %}Menú & Productos{% endblock %}
+{% block page_subtitle %}Gestiona tu catálogo de productos y servicios{% endblock %}
+
+{% block content %}
+<div class="p-6 space-y-6">
+    <!-- Quick Stats -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div class="bg-white/80 backdrop-blur-lg rounded-2xl p-6 border border-gray-200/50 shadow-lg">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-600 mb-1">Total Productos</p>
+                    <p class="text-3xl font-bold text-gray-900">{{ products | length }}</p>
+                </div>
+                <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center">
+                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white/80 backdrop-blur-lg rounded-2xl p-6 border border-gray-200/50 shadow-lg">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-600 mb-1">Disponibles</p>
+                    <p class="text-3xl font-bold text-green-600">{{ products | selectattr("available", "equalto", true) | list | length }}</p>
+                </div>
+                <div class="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center">
+                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white/80 backdrop-blur-lg rounded-2xl p-6 border border-gray-200/50 shadow-lg">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-600 mb-1">Destacados</p>
+                    <p class="text-3xl font-bold text-purple-600">{{ products | selectattr("featured", "equalto", true) | list | length }}</p>
+                </div>
+                <div class="w-12 h-12 bg-gradient-to-br from-purple-500 to-violet-600 rounded-xl flex items-center justify-center">
+                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"></path>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white/80 backdrop-blur-lg rounded-2xl p-6 border border-gray-200/50 shadow-lg">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-600 mb-1">Precio Promedio</p>
+                    <p class="text-3xl font-bold text-gray-900">
+                        ${{ "%.2f"|format(products | map(attribute="price") | sum / (products | length) if products else 0) }}
+                    </p>
+                </div>
+                <div class="w-12 h-12 bg-gradient-to-br from-yellow-500 to-orange-600 rounded-xl flex items-center justify-center">
+                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="bg-white/80 backdrop-blur-lg rounded-2xl p-6 border border-gray-200/50 shadow-lg">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">Acciones Rápidas</h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <button onclick="openAddProductModal()" class="flex items-center p-4 rounded-xl bg-gradient-to-r from-blue-500 to-indigo-600 text-white hover:from-blue-600 hover:to-indigo-700 transition-all duration-200 transform hover:scale-105">
+                <svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                </svg>
+                <span class="font-medium">Agregar Producto</span>
+            </button>
+
+            <button onclick="bulkUpdatePrices()" class="flex items-center p-4 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:from-green-600 hover:to-emerald-700 transition-all duration-200 transform hover:scale-105">
+                <svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
+                </svg>
+                <span class="font-medium">Actualizar Precios</span>
+            </button>
+
+            <button onclick="exportMenu()" class="flex items-center p-4 rounded-xl bg-gradient-to-r from-purple-500 to-violet-600 text-white hover:from-purple-600 hover:to-violet-700 transition-all duration-200 transform hover:scale-105">
+                <svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+                <span class="font-medium">Exportar Menú</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Filter and Search -->
+    <div class="bg-white/80 backdrop-blur-lg rounded-2xl p-6 border border-gray-200/50 shadow-lg">
+        <div class="flex flex-col sm:flex-row gap-4 items-center justify-between">
+            <div class="flex flex-wrap gap-2">
+                <button onclick="filterProducts('all')" class="filter-btn active px-4 py-2 rounded-lg bg-blue-50 text-blue-600 border border-blue-200 font-medium">
+                    Todos ({{ products | length }})
+                </button>
+                <button onclick="filterProducts('available')" class="filter-btn px-4 py-2 rounded-lg bg-gray-50 text-gray-600 border border-gray-200 hover:bg-gray-100 font-medium">
+                    Disponibles ({{ products | selectattr("available", "equalto", true) | list | length }})
+                </button>
+                <button onclick="filterProducts('featured')" class="filter-btn px-4 py-2 rounded-lg bg-gray-50 text-gray-600 border border-gray-200 hover:bg-gray-100 font-medium">
+                    Destacados ({{ products | selectattr("featured", "equalto", true) | list | length }})
+                </button>
+                <button onclick="filterProducts('unavailable')" class="filter-btn px-4 py-2 rounded-lg bg-gray-50 text-gray-600 border border-gray-200 hover:bg-gray-100 font-medium">
+                    No Disponibles ({{ products | selectattr("available", "equalto", false) | list | length }})
+                </button>
+            </div>
+            
+            <div class="flex items-center space-x-3">
+                <div class="relative">
+                    <input type="text" id="search-input" placeholder="Buscar productos..." 
+                           class="w-64 pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                           onkeyup="searchProducts()">
+                    <svg class="w-5 h-5 text-gray-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Products Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" id="products-grid">
+        {% if products %}
+            {% for product in products %}
+            <div class="product-card bg-white/80 backdrop-blur-lg rounded-2xl p-6 border border-gray-200/50 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105" 
+                 data-available="{{ product.available | lower }}" 
+                 data-featured="{{ product.featured | lower }}"
+                 data-name="{{ product.name | lower }}"
+                 data-category="{{ product.category | lower if product.category else '' }}">
+                
+                <!-- Product Header -->
+                <div class="flex items-start justify-between mb-4">
+                    <div class="flex-1">
+                        <h3 class="font-semibold text-gray-900 mb-1">{{ product.name }}</h3>
+                        {% if product.category %}
+                        <span class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-gray-100 text-gray-800">
+                            {{ product.category }}
+                        </span>
+                        {% endif %}
+                    </div>
+                    <div class="flex items-center space-x-1">
+                        {% if product.featured %}
+                        <span class="text-yellow-500" title="Producto destacado">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"></path>
+                            </svg>
+                        </span>
+                        {% endif %}
+                        <span class="w-3 h-3 rounded-full {{ 'bg-green-500' if product.available else 'bg-gray-300' }}"></span>
+                    </div>
+                </div>
+
+                <!-- Price -->
+                <div class="mb-4">
+                    <span class="text-2xl font-bold text-gray-900">${{ "%.2f"|format(product.price) }}</span>
+                </div>
+
+                <!-- Description -->
+                {% if product.description %}
+                <p class="text-sm text-gray-600 mb-4 line-clamp-2">{{ product.description }}</p>
+                {% endif %}
+
+                <!-- Tags -->
+                {% if product.tags %}
+                <div class="flex flex-wrap gap-1 mb-4">
+                    {% for tag in product.tags.split(',') %}
+                    <span class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-blue-100 text-blue-800">
+                        {{ tag.strip() }}
+                    </span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                <!-- Actions -->
+                <div class="flex items-center justify-between pt-4 border-t border-gray-200">
+                    <div class="flex items-center space-x-2">
+                        <button onclick="toggleAvailability({{ product.id }}, {{ product.available | lower }})" 
+                                class="p-2 rounded-lg transition-colors {{ 'text-green-600 hover:bg-green-50' if product.available else 'text-gray-400 hover:bg-gray-50' }}"
+                                title="{{ 'Marcar no disponible' if product.available else 'Marcar disponible' }}">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                {% if product.available %}
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                {% else %}
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                {% endif %}
+                            </svg>
+                        </button>
+                        
+                        <button onclick="toggleFeatured({{ product.id }}, {{ product.featured | lower }})" 
+                                class="p-2 rounded-lg transition-colors {{ 'text-yellow-500 hover:bg-yellow-50' if product.featured else 'text-gray-400 hover:bg-gray-50' }}"
+                                title="{{ 'Quitar de destacados' if product.featured else 'Marcar como destacado' }}">
+                            <svg class="w-4 h-4" fill="{{ 'currentColor' if product.featured else 'none' }}" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    
+                    <div class="flex items-center space-x-2">
+                        <button onclick="editProduct({{ product.id }}, '{{ product.name }}', {{ product.price }}, '{{ product.description or '' }}', '{{ product.category or '' }}', '{{ product.tags or '' }}', {{ product.available | lower }}, {{ product.featured | lower }})" 
+                                class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                            </svg>
+                        </button>
+                        
+                        <button onclick="deleteProduct({{ product.id }})" 
+                                class="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+        <div class="col-span-full text-center py-12">
+            <svg class="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+            </svg>
+            <h3 class="text-lg font-medium text-gray-900 mb-2">No hay productos aún</h3>
+            <p class="text-gray-500 mb-6">Comienza agregando productos a tu catálogo</p>
+            <button onclick="openAddProductModal()" class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors">
+                Agregar Primer Producto
+            </button>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Add/Edit Product Modal -->
+<div id="product-modal" class="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm hidden z-50">
+    <div class="flex items-center justify-center min-h-screen p-4">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-6">
+            <div class="flex items-center justify-between mb-6">
+                <h3 id="product-modal-title" class="text-lg font-semibold text-gray-900">Agregar Producto</h3>
+                <button onclick="closeProductModal()" class="text-gray-400 hover:text-gray-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <form id="product-form" onsubmit="saveProduct(event)">
+                <input type="hidden" id="product-id" name="product_id">
+                
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Nombre *</label>
+                        <input type="text" id="product-name" name="name" required
+                               class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Precio *</label>
+                        <input type="number" step="0.01" min="0" id="product-price" name="price" required
+                               class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Descripción</label>
+                    <textarea id="product-description" name="description" rows="3"
+                              class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Categoría</label>
+                        <input type="text" id="product-category" name="category" placeholder="Ej: Bebidas, Comida"
+                               class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Tags</label>
+                        <input type="text" id="product-tags" name="tags" placeholder="tag1, tag2, tag3"
+                               class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                </div>
+
+                <div class="flex items-center space-x-6 mb-6">
+                    <label class="flex items-center">
+                        <input type="checkbox" id="product-available" name="available" class="mr-2 rounded">
+                        <span class="text-sm font-medium text-gray-700">Disponible</span>
+                    </label>
+                    
+                    <label class="flex items-center">
+                        <input type="checkbox" id="product-featured" name="featured" class="mr-2 rounded">
+                        <span class="text-sm font-medium text-gray-700">Destacado</span>
+                    </label>
+                </div>
+
+                <div class="flex space-x-3">
+                    <button type="button" onclick="closeProductModal()" 
+                            class="flex-1 px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors">
+                        Cancelar
+                    </button>
+                    <button type="submit" 
+                            class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                        Guardar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+// Product Management Functions
+function openAddProductModal() {
+    document.getElementById('product-modal-title').textContent = 'Agregar Producto';
+    document.getElementById('product-form').reset();
+    document.getElementById('product-id').value = '';
+    document.getElementById('product-available').checked = true;
+    document.getElementById('product-modal').classList.remove('hidden');
+}
+
+function editProduct(id, name, price, description, category, tags, available, featured) {
+    document.getElementById('product-modal-title').textContent = 'Editar Producto';
+    document.getElementById('product-id').value = id;
+    document.getElementById('product-name').value = name;
+    document.getElementById('product-price').value = price;
+    document.getElementById('product-description').value = description;
+    document.getElementById('product-category').value = category;
+    document.getElementById('product-tags').value = tags;
+    document.getElementById('product-available').checked = available;
+    document.getElementById('product-featured').checked = featured;
+    document.getElementById('product-modal').classList.remove('hidden');
+}
+
+function closeProductModal() {
+    document.getElementById('product-modal').classList.add('hidden');
+}
+
+async function saveProduct(event) {
+    event.preventDefault();
+    
+    const formData = new FormData(event.target);
+    const productId = formData.get('product_id');
+    
+    const data = {
+        name: formData.get('name'),
+        price: parseFloat(formData.get('price')),
+        description: formData.get('description') || null,
+        category: formData.get('category') || null,
+        tags: formData.get('tags') || null,
+        available: formData.has('available'),
+        featured: formData.has('featured')
+    };
+    
+    try {
+        const url = productId ? `/api/products/${productId}` : '/api/products';
+        const method = productId ? 'PUT' : 'POST';
+        
+        const response = await fetch(url, {
+            method: method,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        
+        if (response.ok) {
+            location.reload();
+        } else {
+            alert('Error al guardar producto');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Error al guardar producto');
+    }
+}
+
+async function deleteProduct(productId) {
+    if (confirm('¿Estás seguro que quieres eliminar este producto?')) {
+        try {
+            const response = await fetch(`/api/products/${productId}`, {
+                method: 'DELETE'
+            });
+            
+            if (response.ok) {
+                location.reload();
+            } else {
+                alert('Error al eliminar producto');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Error al eliminar producto');
+        }
+    }
+}
+
+async function toggleAvailability(productId, currentStatus) {
+    try {
+        const response = await fetch(`/api/products/${productId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ available: !currentStatus })
+        });
+        
+        if (response.ok) {
+            location.reload();
+        } else {
+            alert('Error al actualizar disponibilidad');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Error al actualizar disponibilidad');
+    }
+}
+
+async function toggleFeatured(productId, currentStatus) {
+    try {
+        const response = await fetch(`/api/products/${productId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ featured: !currentStatus })
+        });
+        
+        if (response.ok) {
+            location.reload();
+        } else {
+            alert('Error al actualizar producto destacado');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Error al actualizar producto destacado');
+    }
+}
+
+// Filter and Search Functions
+function filterProducts(filter) {
+    // Update filter buttons
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.classList.remove('active', 'bg-blue-50', 'text-blue-600', 'border-blue-200');
+        btn.classList.add('bg-gray-50', 'text-gray-600', 'border-gray-200');
+    });
+    
+    event.target.classList.add('active', 'bg-blue-50', 'text-blue-600', 'border-blue-200');
+    event.target.classList.remove('bg-gray-50', 'text-gray-600', 'border-gray-200');
+    
+    // Filter product cards
+    document.querySelectorAll('.product-card').forEach(card => {
+        const available = card.dataset.available === 'true';
+        const featured = card.dataset.featured === 'true';
+        
+        let show = false;
+        switch(filter) {
+            case 'all':
+                show = true;
+                break;
+            case 'available':
+                show = available;
+                break;
+            case 'featured':
+                show = featured;
+                break;
+            case 'unavailable':
+                show = !available;
+                break;
+        }
+        
+        card.style.display = show ? 'block' : 'none';
+    });
+}
+
+function searchProducts() {
+    const query = document.getElementById('search-input').value.toLowerCase();
+    
+    document.querySelectorAll('.product-card').forEach(card => {
+        const name = card.dataset.name;
+        const category = card.dataset.category;
+        
+        const matches = name.includes(query) || category.includes(query);
+        card.style.display = matches ? 'block' : 'none';
+    });
+}
+
+function bulkUpdatePrices() {
+    const percentage = prompt('Porcentaje de aumento/descuento (ej: 10 para aumentar 10%, -5 para disminuir 5%):');
+    if (percentage && !isNaN(percentage)) {
+        alert('Funcionalidad en desarrollo');
+    }
+}
+
+function exportMenu() {
+    window.open('/api/products?format=csv', '_blank');
+}
+
+// Close modal when clicking outside
+document.getElementById('product-modal').addEventListener('click', function(event) {
+    if (event.target === this) {
+        closeProductModal();
+    }
+});
+</script>
+
+<style>
+.line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+</style>
+{% endblock %}

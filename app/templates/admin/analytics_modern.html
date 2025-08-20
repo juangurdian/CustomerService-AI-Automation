@@ -1,0 +1,484 @@
+{% extends "base_modern.html" %}
+
+{% block title %}Analítica - {{ config.business.name }}{% endblock %}
+{% block page_title %}Analítica{% endblock %}
+{% block page_subtitle %}Métricas y estadísticas detalladas de tu asistente virtual{% endblock %}
+
+{% block content %}
+<div class="p-6 space-y-6">
+    <!-- Summary Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div class="bg-white/80 backdrop-blur-lg rounded-2xl p-6 border border-gray-200/50 shadow-lg">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-600 mb-1">Total Conversaciones</p>
+                    <p class="text-3xl font-bold text-blue-600">{{ analytics.messages_by_channel.values() | sum }}</p>
+                </div>
+                <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center">
+                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                    </svg>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-white/80 backdrop-blur-lg rounded-2xl p-6 border border-gray-200/50 shadow-lg">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-600 mb-1">Total Pedidos</p>
+                    <p class="text-3xl font-bold text-green-600">{{ analytics.orders_by_status.values() | sum }}</p>
+                </div>
+                <div class="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center">
+                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                    </svg>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-white/80 backdrop-blur-lg rounded-2xl p-6 border border-gray-200/50 shadow-lg">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-600 mb-1">Precisión del Bot</p>
+                    {% set total_messages = analytics.messages_by_intent.values() | sum %}
+                    {% set successful_intents = analytics.messages_by_intent.values() | sum - analytics.messages_by_intent.get('unknown', 0) %}
+                    {% set success_rate = (successful_intents / total_messages * 100) if total_messages > 0 else 0 %}
+                    <p class="text-3xl font-bold text-purple-600">{{ "%.1f"|format(success_rate) }}%</p>
+                </div>
+                <div class="w-12 h-12 bg-gradient-to-br from-purple-500 to-violet-600 rounded-xl flex items-center justify-center">
+                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-white/80 backdrop-blur-lg rounded-2xl p-6 border border-gray-200/50 shadow-lg">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-600 mb-1">Canales Activos</p>
+                    <p class="text-3xl font-bold text-orange-600">{{ analytics.messages_by_channel.keys() | length }}</p>
+                </div>
+                <div class="w-12 h-12 bg-gradient-to-br from-orange-500 to-red-600 rounded-xl flex items-center justify-center">
+                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="bg-white/80 backdrop-blur-lg rounded-2xl p-6 border border-gray-200/50 shadow-lg">
+        <div class="flex items-center justify-between">
+            <h3 class="text-lg font-semibold text-gray-900">Acciones Rápidas</h3>
+            <div class="flex items-center space-x-3">
+                <button onclick="exportAnalytics()" class="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    Exportar Reporte
+                </button>
+                <button onclick="refreshAnalytics()" class="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                    </svg>
+                    Actualizar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Channels Distribution Chart -->
+        <div class="bg-white/80 backdrop-blur-lg rounded-2xl p-6 border border-gray-200/50 shadow-lg">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-lg font-bold text-gray-900">📱 Distribución por Canal</h3>
+                <div class="text-sm text-gray-500">Total: {{ analytics.messages_by_channel.values() | sum }} mensajes</div>
+            </div>
+            <div class="relative h-64">
+                <canvas id="channelsChart"></canvas>
+            </div>
+        </div>
+        
+        <!-- Intents Chart -->
+        <div class="bg-white/80 backdrop-blur-lg rounded-2xl p-6 border border-gray-200/50 shadow-lg">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-lg font-bold text-gray-900">🎯 Intenciones Detectadas</h3>
+                <div class="text-sm text-gray-500">Últimos {{ analytics.messages_by_intent.values() | sum }} mensajes</div>
+            </div>
+            <div class="relative h-64">
+                <canvas id="intentsChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Activity Timeline -->
+    <div class="bg-white/80 backdrop-blur-lg rounded-2xl p-6 border border-gray-200/50 shadow-lg">
+        <div class="flex items-center justify-between mb-6">
+            <h3 class="text-lg font-bold text-gray-900">📈 Actividad Diaria</h3>
+            <div class="flex items-center space-x-2">
+                <select id="timeRange" onchange="updateTimeRange()" class="border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                    <option value="7">Últimos 7 días</option>
+                    <option value="30">Últimos 30 días</option>
+                    <option value="90">Últimos 90 días</option>
+                </select>
+            </div>
+        </div>
+        <div class="relative h-80">
+            <canvas id="activityChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Detailed Statistics -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Top Intents -->
+        <div class="bg-white/80 backdrop-blur-lg rounded-2xl p-6 border border-gray-200/50 shadow-lg">
+            <h3 class="text-lg font-bold text-gray-900 mb-6">🔥 Consultas Más Frecuentes</h3>
+            
+            {% if analytics.messages_by_intent %}
+            <div class="space-y-3">
+                {% for intent, count in analytics.messages_by_intent.items() | sort(reverse=true, attribute='1') | list[:10] %}
+                <div class="flex justify-between items-center p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
+                    <div class="flex items-center">
+                        {% if intent == 'faq' %}
+                        <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
+                            <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                        {% elif intent == 'menu' %}
+                        <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mr-3">
+                            <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                            </svg>
+                        </div>
+                        {% elif intent == 'order' %}
+                        <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center mr-3">
+                            <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                            </svg>
+                        </div>
+                        {% else %}
+                        <div class="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center mr-3">
+                            <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                            </svg>
+                        </div>
+                        {% endif %}
+                        <div>
+                            <span class="font-medium text-gray-900 capitalize">{{ intent.replace('_', ' ') }}</span>
+                            <div class="text-sm text-gray-500">
+                                {% if intent == 'faq' %}Preguntas frecuentes
+                                {% elif intent == 'menu' %}Consultas de menú
+                                {% elif intent == 'order' %}Solicitudes de pedido
+                                {% elif intent == 'greeting' %}Saludos
+                                {% elif intent == 'unknown' %}No identificadas
+                                {% else %}{{ intent }}{% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">{{ count }}</span>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center py-12">
+                <svg class="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H9a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                </svg>
+                <p class="text-gray-600 font-medium">No hay datos disponibles aún</p>
+                <p class="text-sm text-gray-500 mt-1">Las estadísticas aparecerán cuando tengas conversaciones</p>
+            </div>
+            {% endif %}
+        </div>
+        
+        <!-- Order Status Distribution -->
+        <div class="bg-white/80 backdrop-blur-lg rounded-2xl p-6 border border-gray-200/50 shadow-lg">
+            <h3 class="text-lg font-bold text-gray-900 mb-6">📊 Estados de Pedidos</h3>
+            
+            {% if analytics.orders_by_status %}
+            <div class="space-y-3">
+                {% for status, count in analytics.orders_by_status.items() %}
+                <div class="flex justify-between items-center p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
+                    <div class="flex items-center">
+                        {% if status == 'new' %}
+                        <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
+                            <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                            </svg>
+                        </div>
+                        {% elif status == 'confirmed' %}
+                        <div class="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center mr-3">
+                            <svg class="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                        {% elif status == 'fulfilled' %}
+                        <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mr-3">
+                            <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                        </div>
+                        {% else %}
+                        <div class="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center mr-3">
+                            <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </div>
+                        {% endif %}
+                        <div>
+                            <span class="font-medium text-gray-900 capitalize">
+                                {% if status == 'new' %}Nuevos
+                                {% elif status == 'confirmed' %}Confirmados
+                                {% elif status == 'fulfilled' %}Completados
+                                {% elif status == 'cancelled' %}Cancelados
+                                {% else %}{{ status.replace('_', ' ') }}{% endif %}
+                            </span>
+                            <div class="text-sm text-gray-500">
+                                {% if status == 'new' %}Pendientes de confirmación
+                                {% elif status == 'confirmed' %}En preparación
+                                {% elif status == 'fulfilled' %}Entregados
+                                {% elif status == 'cancelled' %}Cancelados por el cliente
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">{{ count }}</span>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center py-12">
+                <svg class="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                </svg>
+                <p class="text-gray-600 font-medium">No hay pedidos aún</p>
+                <p class="text-sm text-gray-500 mt-1">Los pedidos aparecerán cuando los clientes realicen compras</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+// Channel Distribution Chart
+const channelsCtx = document.getElementById('channelsChart').getContext('2d');
+const channelsData = {{ analytics.messages_by_channel | tojson }};
+
+const channelsChart = new Chart(channelsCtx, {
+    type: 'doughnut',
+    data: {
+        labels: Object.keys(channelsData).map(k => k.charAt(0).toUpperCase() + k.slice(1)),
+        datasets: [{
+            data: Object.values(channelsData),
+            backgroundColor: [
+                '#3B82F6', // Blue
+                '#10B981', // Green  
+                '#8B5CF6', // Purple
+                '#F59E0B', // Orange
+                '#EF4444', // Red
+                '#06B6D4'  // Cyan
+            ],
+            borderWidth: 3,
+            borderColor: '#fff',
+            hoverBorderWidth: 4
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom',
+                labels: {
+                    padding: 20,
+                    usePointStyle: true,
+                    font: {
+                        size: 12
+                    }
+                }
+            },
+            tooltip: {
+                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                titleColor: '#fff',
+                bodyColor: '#fff',
+                borderColor: '#374151',
+                borderWidth: 1,
+                cornerRadius: 8,
+                displayColors: true
+            }
+        }
+    }
+});
+
+// Intents Chart
+const intentsCtx = document.getElementById('intentsChart').getContext('2d');
+const intentsData = {{ analytics.messages_by_intent | tojson }};
+
+const intentsChart = new Chart(intentsCtx, {
+    type: 'bar',
+    data: {
+        labels: Object.keys(intentsData).map(k => k.charAt(0).toUpperCase() + k.slice(1).replace('_', ' ')),
+        datasets: [{
+            data: Object.values(intentsData),
+            backgroundColor: '#3B82F6',
+            borderColor: '#2563EB',
+            borderWidth: 1,
+            borderRadius: 6,
+            borderSkipped: false
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                display: false
+            },
+            tooltip: {
+                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                titleColor: '#fff',
+                bodyColor: '#fff',
+                borderColor: '#374151',
+                borderWidth: 1,
+                cornerRadius: 8
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    stepSize: 1,
+                    color: '#6B7280'
+                },
+                grid: {
+                    color: '#F3F4F6'
+                }
+            },
+            x: {
+                ticks: {
+                    color: '#6B7280'
+                },
+                grid: {
+                    display: false
+                }
+            }
+        }
+    }
+});
+
+// Activity Timeline Chart
+const activityCtx = document.getElementById('activityChart').getContext('2d');
+const activityData = {{ analytics.daily_activity | tojson }};
+
+const sortedDates = Object.keys(activityData).sort();
+const activityCounts = sortedDates.map(date => activityData[date]);
+
+const activityChart = new Chart(activityCtx, {
+    type: 'line',
+    data: {
+        labels: sortedDates.map(date => {
+            const d = new Date(date);
+            return d.toLocaleDateString('es', { month: 'short', day: 'numeric' });
+        }),
+        datasets: [{
+            label: 'Mensajes por día',
+            data: activityCounts,
+            borderColor: '#3B82F6',
+            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+            fill: true,
+            tension: 0.3,
+            pointBackgroundColor: '#3B82F6',
+            pointBorderColor: '#fff',
+            pointBorderWidth: 2,
+            pointRadius: 5,
+            pointHoverRadius: 8
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                display: false
+            },
+            tooltip: {
+                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                titleColor: '#fff',
+                bodyColor: '#fff',
+                borderColor: '#374151',
+                borderWidth: 1,
+                cornerRadius: 8
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    stepSize: 1,
+                    color: '#6B7280'
+                },
+                grid: {
+                    color: '#F3F4F6'
+                }
+            },
+            x: {
+                ticks: {
+                    color: '#6B7280'
+                },
+                grid: {
+                    color: '#F3F4F6'
+                }
+            }
+        },
+        interaction: {
+            intersect: false,
+            mode: 'index'
+        }
+    }
+});
+
+// Functions
+function exportAnalytics() {
+    const csvData = [
+        ['Métrica', 'Valor', 'Descripción'],
+        ['Total Conversaciones', '{{ analytics.messages_by_channel.values() | sum }}', 'Número total de mensajes recibidos'],
+        ['Total Pedidos', '{{ analytics.orders_by_status.values() | sum }}', 'Número total de pedidos realizados'],
+        ['Precisión del Bot', '{{ "%.1f"|format(success_rate) }}%', 'Porcentaje de intenciones correctamente identificadas'],
+        ['Canales Activos', '{{ analytics.messages_by_channel.keys() | length }}', 'Número de canales con actividad'],
+        ...Object.entries({{ analytics.messages_by_channel | tojson }}).map(([channel, count]) => 
+            [`Canal ${channel}`, count, `Mensajes recibidos por ${channel}`]
+        ),
+        ...Object.entries({{ analytics.messages_by_intent | tojson }}).map(([intent, count]) => 
+            [`Intención ${intent}`, count, `Mensajes clasificados como ${intent}`]
+        )
+    ];
+    
+    const csvContent = csvData.map(row => row.join(',')).join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = window.URL.createObjectURL(blob);
+    
+    const a = document.createElement('a');
+    a.style.display = 'none';
+    a.href = url;
+    a.download = `analytics_${new Date().toISOString().split('T')[0]}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+}
+
+function refreshAnalytics() {
+    location.reload();
+}
+
+function updateTimeRange() {
+    // Placeholder for time range update functionality
+    const range = document.getElementById('timeRange').value;
+    console.log('Updating time range to:', range);
+    // In a real implementation, this would fetch new data based on the selected range
+}
+</script>
+{% endblock %}

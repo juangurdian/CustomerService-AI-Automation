@@ -108,7 +108,7 @@ async def knowledge_management(request: Request, session: Session = Depends(get_
     docs = doc_repo.get_all()
     
     return templates.TemplateResponse(
-        "admin/knowledge.html",
+        "admin/knowledge_modern.html",
         {"request": request, "config": get_dynamic_config(), "faqs": faqs, "docs": docs}
     )
 
@@ -164,7 +164,7 @@ async def menu_management(request: Request, session: Session = Depends(get_sessi
     products = product_repo.get_all(available_only=False)
     
     return templates.TemplateResponse(
-        "admin/menu.html",
+        "admin/menu_modern.html",
         {"request": request, "config": get_dynamic_config(), "products": products}
     )
 
@@ -173,7 +173,7 @@ async def menu_management(request: Request, session: Session = Depends(get_sessi
 async def playground(request: Request):
     """Chat testing playground"""
     return templates.TemplateResponse(
-        "admin/playground.html",
+        "admin/playground_modern.html",
         {"request": request, "config": get_dynamic_config()}
     )
 
@@ -185,7 +185,7 @@ async def orders_management(request: Request, session: Session = Depends(get_ses
     orders = order_repo.get_all()
     
     return templates.TemplateResponse(
-        "admin/orders.html",
+        "admin/orders_modern.html",
         {"request": request, "config": get_dynamic_config(), "orders": orders}
     )
 
@@ -203,7 +203,7 @@ async def channels_management(request: Request):
     }
     
     return templates.TemplateResponse(
-        "admin/channels.html",
+        "admin/channels_modern.html",
         {"request": request, "config": get_dynamic_config(), "channel_status": channel_status}
     )
 
@@ -243,7 +243,7 @@ async def analytics(request: Request, session: Session = Depends(get_session)):
         analytics_data["orders_by_status"][status] = analytics_data["orders_by_status"].get(status, 0) + 1
     
     return templates.TemplateResponse(
-        "admin/analytics.html",
+        "admin/analytics_modern.html",
         {"request": request, "config": get_dynamic_config(), "analytics": analytics_data}
     )
 
@@ -263,7 +263,7 @@ async def settings_page(request: Request):
     }
     
     return templates.TemplateResponse(
-        "admin/settings.html",
+        "admin/settings_modern.html",
         {"request": request, "config": get_dynamic_config(), "settings": safe_settings}
     )
 
