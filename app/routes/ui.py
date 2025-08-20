@@ -9,7 +9,7 @@ from pathlib import Path
 import structlog
 
 from app.deps import get_session
-from app.db.repo import MessageRepo, FAQRepo, ProductRepo, OrderRepo, DocRepo
+from app.db.repo import MessageRepo, FAQRepo, ProductRepo, OrderRepo, DocRepo, ConversationRepo
 from app.db.models import FAQ, Product, Order, Doc
 from app.services.rag import rag_service
 from app.settings import config, settings, get_dynamic_config
@@ -37,8 +37,30 @@ async def admin_dashboard(request: Request, session: Session = Depends(get_sessi
     }
     
     return templates.TemplateResponse(
-        "admin/dashboard.html",
+        "admin/dashboard_modern.html",
         {"request": request, "config": get_dynamic_config(), "stats": stats}
+    )
+
+
+@router.get("/admin/live-chat", response_class=HTMLResponse)
+async def live_chat(request: Request, session: Session = Depends(get_session)):
+    """Live chat management page"""
+    conversation_repo = ConversationRepo(session)
+    conversations = conversation_repo.get_all_conversations()
+    
+    # Get counts for different statuses
+    active_count = len([c for c in conversations if c.status in ["active", "waiting_human"]])
+    escalated_count = len([c for c in conversations if c.status == "escalated"])
+    
+    return templates.TemplateResponse(
+        "admin/live_chat.html",
+        {
+            "request": request, 
+            "config": get_dynamic_config(), 
+            "conversations": conversations,
+            "active_count": active_count,
+            "escalated_count": escalated_count
+        }
     )
 
 

@@ -1,0 +1,465 @@
+{% extends "base_modern.html" %}
+
+{% block title %}Chat en Vivo{% endblock %}
+
+{% block content %}
+<div class="h-full flex">
+    <!-- Chat List Sidebar -->
+    <div class="w-80 bg-white border-r border-gray-200 flex flex-col">
+        <!-- Chat List Header -->
+        <div class="p-4 border-b border-gray-200 bg-gradient-to-r from-blue-600 to-indigo-600 text-white">
+            <div class="flex items-center justify-between">
+                <h2 class="text-lg font-semibold">Conversaciones</h2>
+                <div class="flex items-center space-x-2">
+                    <span class="bg-white/20 px-2 py-1 rounded-full text-xs">{{ active_count }} activas</span>
+                    <button onclick="refreshConversations()" class="p-1 hover:bg-white/20 rounded">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chat Filter Tabs -->
+        <div class="flex border-b border-gray-200">
+            <button onclick="filterChats('active')" class="chat-filter-btn active flex-1 px-4 py-3 text-sm font-medium text-blue-600 border-b-2 border-blue-600">
+                Activas ({{ active_count }})
+            </button>
+            <button onclick="filterChats('escalated')" class="chat-filter-btn flex-1 px-4 py-3 text-sm font-medium text-gray-500 border-b-2 border-transparent hover:text-gray-700">
+                Escaladas ({{ escalated_count }})
+            </button>
+            <button onclick="filterChats('all')" class="chat-filter-btn flex-1 px-4 py-3 text-sm font-medium text-gray-500 border-b-2 border-transparent hover:text-gray-700">
+                Todas
+            </button>
+        </div>
+
+        <!-- Chat List -->
+        <div class="flex-1 overflow-y-auto" id="chat-list">
+            {% for conversation in conversations %}
+            <div class="chat-item p-4 border-b border-gray-100 hover:bg-gray-50 cursor-pointer" 
+                 data-status="{{ conversation.status }}" 
+                 data-conversation-id="{{ conversation.conversation_id }}"
+                 onclick="openChat('{{ conversation.conversation_id }}')">
+                
+                <div class="flex items-start space-x-3">
+                    <!-- Avatar -->
+                    <div class="flex-shrink-0">
+                        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white font-semibold">
+                            {{ conversation.customer_name[0] if conversation.customer_name else conversation.user_id[0].upper() }}
+                        </div>
+                        {% if conversation.status == 'escalated' %}
+                        <div class="w-3 h-3 bg-red-500 rounded-full border-2 border-white -mt-2 ml-7"></div>
+                        {% elif conversation.status == 'waiting_human' %}
+                        <div class="w-3 h-3 bg-yellow-500 rounded-full border-2 border-white -mt-2 ml-7"></div>
+                        {% else %}
+                        <div class="w-3 h-3 bg-green-500 rounded-full border-2 border-white -mt-2 ml-7"></div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Chat Info -->
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center justify-between">
+                            <p class="text-sm font-medium text-gray-900 truncate">
+                                {{ conversation.customer_name or conversation.user_id }}
+                            </p>
+                            <p class="text-xs text-gray-500">
+                                {{ conversation.last_activity.strftime('%H:%M') }}
+                            </p>
+                        </div>
+                        
+                        <div class="flex items-center justify-between mt-1">
+                            <p class="text-xs text-gray-600 truncate">
+                                <span class="inline-flex items-center">
+                                    {% if conversation.channel == 'whatsapp' %}
+                                    <svg class="w-3 h-3 mr-1 text-green-500" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0020.885 3.488"/>
+                                    </svg>
+                                    {% elif conversation.channel == 'telegram' %}
+                                    <svg class="w-3 h-3 mr-1 text-blue-500" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
+                                    </svg>
+                                    {% else %}
+                                    <svg class="w-3 h-3 mr-1 text-gray-500" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
+                                    </svg>
+                                    {% endif %}
+                                    {{ conversation.channel.title() }}
+                                </span>
+                            </p>
+                            {% if conversation.status == 'escalated' %}
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                Escalada
+                            </span>
+                            {% elif conversation.status == 'waiting_human' %}
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                Esperando
+                            </span>
+                            {% else %}
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                Activa
+                            </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Chat Window -->
+    <div class="flex-1 flex flex-col bg-gray-50" id="chat-window">
+        <!-- Default Empty State -->
+        <div id="empty-state" class="flex-1 flex items-center justify-center">
+            <div class="text-center">
+                <div class="w-24 h-24 mx-auto mb-4 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full flex items-center justify-center">
+                    <svg class="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                    </svg>
+                </div>
+                <h3 class="text-lg font-medium text-gray-900 mb-2">Selecciona una conversación</h3>
+                <p class="text-gray-500">Elige una conversación de la lista para ver el chat</p>
+            </div>
+        </div>
+
+        <!-- Chat Content (Initially Hidden) -->
+        <div id="chat-content" class="flex-1 flex flex-col hidden">
+            <!-- Chat Header -->
+            <div class="p-4 bg-white border-b border-gray-200 flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white font-semibold" id="chat-avatar">
+                        ?
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-gray-900" id="chat-customer-name">Cliente</h3>
+                        <div class="flex items-center space-x-2 text-sm text-gray-500">
+                            <span id="chat-channel">Web</span>
+                            <span>•</span>
+                            <span id="chat-status">Activa</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flex items-center space-x-2">
+                    <button id="escalate-btn" onclick="escalateConversation()" class="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm font-medium hover:bg-yellow-200">
+                        Escalar a Humano
+                    </button>
+                    <button id="close-btn" onclick="closeConversation()" class="px-3 py-1 bg-gray-100 text-gray-800 rounded-full text-sm font-medium hover:bg-gray-200">
+                        Cerrar Chat
+                    </button>
+                    <button onclick="refreshCurrentChat()" class="p-2 text-gray-400 hover:text-gray-600">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Messages Container -->
+            <div class="flex-1 overflow-y-auto p-4 space-y-4" id="messages-container">
+                <!-- Messages will be loaded here -->
+            </div>
+
+            <!-- Message Input -->
+            <div class="p-4 bg-white border-t border-gray-200">
+                <form id="message-form" class="flex space-x-3">
+                    <div class="flex-1">
+                        <textarea id="message-input" 
+                                rows="1" 
+                                placeholder="Escribe tu respuesta..."
+                                class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                                onkeydown="handleKeyDown(event)"></textarea>
+                    </div>
+                    <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                        </svg>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let currentConversationId = null;
+let messagePolling = null;
+
+// Initialize page
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-refresh conversations every 30 seconds
+    setInterval(refreshConversations, 30000);
+    
+    // Handle message form
+    document.getElementById('message-form').addEventListener('submit', sendMessage);
+});
+
+function filterChats(status) {
+    // Update filter buttons
+    document.querySelectorAll('.chat-filter-btn').forEach(btn => {
+        btn.classList.remove('active', 'text-blue-600', 'border-blue-600');
+        btn.classList.add('text-gray-500', 'border-transparent');
+    });
+    
+    event.target.classList.add('active', 'text-blue-600', 'border-blue-600');
+    event.target.classList.remove('text-gray-500', 'border-transparent');
+    
+    // Filter chat items
+    document.querySelectorAll('.chat-item').forEach(item => {
+        const itemStatus = item.dataset.status;
+        if (status === 'all' || 
+            (status === 'active' && ['active', 'waiting_human'].includes(itemStatus)) ||
+            (status === 'escalated' && itemStatus === 'escalated')) {
+            item.style.display = 'block';
+        } else {
+            item.style.display = 'none';
+        }
+    });
+}
+
+async function openChat(conversationId) {
+    currentConversationId = conversationId;
+    
+    // Update selected chat item
+    document.querySelectorAll('.chat-item').forEach(item => {
+        item.classList.remove('bg-blue-50', 'border-l-4', 'border-blue-500');
+    });
+    
+    const selectedItem = document.querySelector(`[data-conversation-id="${conversationId}"]`);
+    if (selectedItem) {
+        selectedItem.classList.add('bg-blue-50', 'border-l-4', 'border-blue-500');
+    }
+    
+    // Load chat data
+    try {
+        const response = await fetch(`/api/conversations/${conversationId}`);
+        const data = await response.json();
+        
+        // Update chat header
+        document.getElementById('chat-avatar').textContent = data.conversation.customer_name ? 
+            data.conversation.customer_name[0] : data.conversation.user_id[0].toUpperCase();
+        document.getElementById('chat-customer-name').textContent = 
+            data.conversation.customer_name || data.conversation.user_id;
+        document.getElementById('chat-channel').textContent = data.conversation.channel.toUpperCase();
+        document.getElementById('chat-status').textContent = getStatusText(data.conversation.status);
+        
+        // Update action buttons based on status
+        updateActionButtons(data.conversation.status);
+        
+        // Load messages
+        loadMessages(data.messages);
+        
+        // Show chat content
+        document.getElementById('empty-state').classList.add('hidden');
+        document.getElementById('chat-content').classList.remove('hidden');
+        
+        // Start polling for new messages
+        startMessagePolling();
+        
+    } catch (error) {
+        console.error('Error loading chat:', error);
+        alert('Error al cargar el chat');
+    }
+}
+
+function loadMessages(messages) {
+    const container = document.getElementById('messages-container');
+    container.innerHTML = '';
+    
+    messages.forEach(message => {
+        const messageEl = createMessageElement(message);
+        container.appendChild(messageEl);
+    });
+    
+    // Scroll to bottom
+    container.scrollTop = container.scrollHeight;
+}
+
+function createMessageElement(message) {
+    const div = document.createElement('div');
+    div.className = `flex ${message.is_from_user ? 'justify-start' : 'justify-end'}`;
+    
+    const isBot = message.source && message.source !== 'human';
+    const isHuman = message.source === 'human';
+    
+    div.innerHTML = `
+        <div class="max-w-xs lg:max-w-md">
+            <div class="${message.is_from_user ? 'bg-gray-200 text-gray-900' : 
+                        isHuman ? 'bg-green-500 text-white' : 'bg-blue-500 text-white'} 
+                        rounded-lg px-4 py-2">
+                ${message.is_from_user ? '' : 
+                  `<div class="text-xs opacity-75 mb-1">${isHuman ? '👤 Agente Humano' : '🤖 Bot'}</div>`}
+                <p class="text-sm">${escapeHtml(message.text)}</p>
+                ${message.response ? `<p class="text-sm mt-1">${escapeHtml(message.response)}</p>` : ''}
+            </div>
+            <div class="text-xs text-gray-500 mt-1 ${message.is_from_user ? 'text-left' : 'text-right'}">
+                ${new Date(message.created_at).toLocaleTimeString()}
+            </div>
+        </div>
+    `;
+    
+    return div;
+}
+
+async function sendMessage(event) {
+    event.preventDefault();
+    
+    const input = document.getElementById('message-input');
+    const text = input.value.trim();
+    
+    if (!text || !currentConversationId) return;
+    
+    try {
+        const response = await fetch('/api/conversations/send-message', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                conversation_id: currentConversationId,
+                text: text,
+                is_human_response: true
+            })
+        });
+        
+        if (response.ok) {
+            input.value = '';
+            // Message will be added via polling
+        } else {
+            alert('Error al enviar mensaje');
+        }
+    } catch (error) {
+        console.error('Error sending message:', error);
+        alert('Error al enviar mensaje');
+    }
+}
+
+async function escalateConversation() {
+    if (!currentConversationId) return;
+    
+    if (confirm('¿Estás seguro que quieres escalar esta conversación a un agente humano?')) {
+        try {
+            const response = await fetch(`/api/conversations/${currentConversationId}/escalate`, {
+                method: 'POST'
+            });
+            
+            if (response.ok) {
+                // Refresh conversation data
+                await openChat(currentConversationId);
+                refreshConversations();
+            } else {
+                alert('Error al escalar conversación');
+            }
+        } catch (error) {
+            console.error('Error escalating conversation:', error);
+            alert('Error al escalar conversación');
+        }
+    }
+}
+
+async function closeConversation() {
+    if (!currentConversationId) return;
+    
+    if (confirm('¿Estás seguro que quieres cerrar esta conversación?')) {
+        try {
+            const response = await fetch(`/api/conversations/${currentConversationId}/close`, {
+                method: 'POST'
+            });
+            
+            if (response.ok) {
+                // Clear chat window
+                document.getElementById('empty-state').classList.remove('hidden');
+                document.getElementById('chat-content').classList.add('hidden');
+                currentConversationId = null;
+                
+                // Stop polling
+                if (messagePolling) {
+                    clearInterval(messagePolling);
+                    messagePolling = null;
+                }
+                
+                refreshConversations();
+            } else {
+                alert('Error al cerrar conversación');
+            }
+        } catch (error) {
+            console.error('Error closing conversation:', error);
+            alert('Error al cerrar conversación');
+        }
+    }
+}
+
+function startMessagePolling() {
+    if (messagePolling) {
+        clearInterval(messagePolling);
+    }
+    
+    messagePolling = setInterval(async () => {
+        if (currentConversationId) {
+            try {
+                const response = await fetch(`/api/conversations/${currentConversationId}/messages`);
+                const messages = await response.json();
+                loadMessages(messages);
+            } catch (error) {
+                console.error('Error polling messages:', error);
+            }
+        }
+    }, 3000); // Poll every 3 seconds
+}
+
+async function refreshConversations() {
+    try {
+        const response = await fetch('/api/conversations');
+        const conversations = await response.json();
+        
+        // Update chat list (simplified - in real implementation, you'd update the DOM)
+        location.reload(); // Simple refresh for now
+    } catch (error) {
+        console.error('Error refreshing conversations:', error);
+    }
+}
+
+async function refreshCurrentChat() {
+    if (currentConversationId) {
+        await openChat(currentConversationId);
+    }
+}
+
+function getStatusText(status) {
+    const statusMap = {
+        'active': 'Activa',
+        'escalated': 'Escalada',
+        'waiting_human': 'Esperando',
+        'closed': 'Cerrada'
+    };
+    return statusMap[status] || status;
+}
+
+function updateActionButtons(status) {
+    const escalateBtn = document.getElementById('escalate-btn');
+    const closeBtn = document.getElementById('close-btn');
+    
+    if (status === 'escalated') {
+        escalateBtn.textContent = 'Ya Escalada';
+        escalateBtn.disabled = true;
+        escalateBtn.classList.add('opacity-50', 'cursor-not-allowed');
+    } else {
+        escalateBtn.textContent = 'Escalar a Humano';
+        escalateBtn.disabled = false;
+        escalateBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+    }
+}
+
+function handleKeyDown(event) {
+    if (event.key === 'Enter' && !event.shiftKey) {
+        event.preventDefault();
+        document.getElementById('message-form').dispatchEvent(new Event('submit'));
+    }
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+</script>
+{% endblock %}

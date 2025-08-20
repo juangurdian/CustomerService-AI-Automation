@@ -10,9 +10,14 @@ class Message(SQLModel, table=True):
     user_id: str
     text: str
     intent: Optional[str] = None
-    source: Optional[str] = None  # faq/menu/rag/llm/fallback
+    source: Optional[str] = None  # faq/menu/rag/llm/fallback/human
     response: Optional[str] = None
     trace_data: Optional[str] = None  # JSON string with debug info
+    is_from_user: bool = True  # True for user messages, False for bot/human responses
+    human_agent_id: Optional[str] = None  # ID of human agent handling this conversation
+    requires_human: bool = False  # Flag to request human intervention
+    conversation_id: Optional[str] = None  # Groups messages into conversations
+    read_by_agent: bool = False  # Track if human agent has read this message
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
 
@@ -58,6 +63,20 @@ class Doc(SQLModel, table=True):
     file_type: str  # pdf/txt/md/csv
     content_preview: Optional[str] = None
     indexed: bool = False
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+
+class Conversation(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    conversation_id: str = Field(unique=True)  # Unique identifier for the conversation
+    user_id: str
+    channel: str
+    customer_name: Optional[str] = None
+    customer_phone: Optional[str] = None
+    status: str = "active"  # active, closed, escalated, waiting_human
+    assigned_agent: Optional[str] = None  # Human agent assigned to this conversation
+    last_activity: datetime = Field(default_factory=datetime.utcnow)
+    escalated_at: Optional[datetime] = None
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
 

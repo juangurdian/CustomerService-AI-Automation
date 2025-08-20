@@ -6,8 +6,8 @@ import json
 import structlog
 
 from app.deps import get_session
-from app.db.repo import MessageRepo, FAQRepo, ProductRepo, OrderRepo, DocRepo, SettingRepo
-from app.db.models import Message, FAQ, Product, Order, Doc
+from app.db.repo import MessageRepo, FAQRepo, ProductRepo, OrderRepo, DocRepo, SettingRepo, ConversationRepo
+from app.db.models import Message, FAQ, Product, Order, Doc, Conversation
 from app.services.responder import response_orchestrator
 from app.services.rag import rag_service
 from app.settings import config
@@ -346,4 +346,147 @@ async def setup_channels(
     
     except Exception as e:
         logger.error(f"Error saving channel config: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# Live Chat API Endpoints
+class SendMessageRequest(BaseModel):
+    conversation_id: str
+    text: str
+    is_human_response: bool = False
+
+
+@router.get("/conversations")
+async def get_conversations(session: Session = Depends(get_session)):
+    """Get all conversations for live chat interface"""
+    try:
+        conversation_repo = ConversationRepo(session)
+        conversations = conversation_repo.get_all_conversations()
+        
+        # Get counts for different statuses
+        active_count = len([c for c in conversations if c.status in ["active", "waiting_human"]])
+        escalated_count = len([c for c in conversations if c.status == "escalated"])
+        
+        return {
+            "conversations": conversations,
+            "active_count": active_count,
+            "escalated_count": escalated_count
+        }
+    except Exception as e:
+        logger.error(f"Error getting conversations: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/conversations/{conversation_id}")
+async def get_conversation_detail(conversation_id: str, session: Session = Depends(get_session)):
+    """Get conversation details with messages"""
+    try:
+        conversation_repo = ConversationRepo(session)
+        conversation = conversation_repo.get_by_conversation_id(conversation_id)
+        
+        if not conversation:
+            raise HTTPException(status_code=404, detail="Conversation not found")
+        
+        messages = conversation_repo.get_messages_for_conversation(conversation_id)
+        
+        return {
+            "conversation": conversation,
+            "messages": messages
+        }
+    except Exception as e:
+        logger.error(f"Error getting conversation detail: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/conversations/{conversation_id}/messages")
+async def get_conversation_messages(conversation_id: str, session: Session = Depends(get_session)):
+    """Get messages for a specific conversation"""
+    try:
+        conversation_repo = ConversationRepo(session)
+        messages = conversation_repo.get_messages_for_conversation(conversation_id)
+        return messages
+    except Exception as e:
+        logger.error(f"Error getting conversation messages: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/conversations/send-message")
+async def send_message_to_conversation(request: SendMessageRequest, session: Session = Depends(get_session)):
+    """Send a message in a conversation (from human agent)"""
+    try:
+        message_repo = MessageRepo(session)
+        conversation_repo = ConversationRepo(session)
+        
+        # Verify conversation exists
+        conversation = conversation_repo.get_by_conversation_id(request.conversation_id)
+        if not conversation:
+            raise HTTPException(status_code=404, detail="Conversation not found")
+        
+        # Create the human response message
+        message = Message(
+            channel=conversation.channel,
+            user_id=conversation.user_id,
+            text=request.text,
+            conversation_id=request.conversation_id,
+            is_from_user=False,
+            source="human",
+            human_agent_id="admin"  # TODO: Get actual agent ID from auth
+        )
+        
+        message_repo.create(message)
+        
+        # Update conversation last activity
+        conversation_repo.update_status(request.conversation_id, conversation.status)
+        
+        return {"success": True, "message": "Message sent"}
+    
+    except Exception as e:
+        logger.error(f"Error sending message: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/conversations/{conversation_id}/escalate")
+async def escalate_conversation(conversation_id: str, session: Session = Depends(get_session)):
+    """Escalate conversation to human agent"""
+    try:
+        conversation_repo = ConversationRepo(session)
+        conversation = conversation_repo.update_status(conversation_id, "escalated", "admin")
+        
+        if not conversation:
+            raise HTTPException(status_code=404, detail="Conversation not found")
+        
+        # Create a system message about escalation
+        message_repo = MessageRepo(session)
+        system_message = Message(
+            channel=conversation.channel,
+            user_id=conversation.user_id,
+            text="Conversación escalada a agente humano",
+            conversation_id=conversation_id,
+            is_from_user=False,
+            source="system",
+            human_agent_id="admin"
+        )
+        message_repo.create(system_message)
+        
+        return {"success": True, "message": "Conversation escalated"}
+    
+    except Exception as e:
+        logger.error(f"Error escalating conversation: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/conversations/{conversation_id}/close")
+async def close_conversation(conversation_id: str, session: Session = Depends(get_session)):
+    """Close a conversation"""
+    try:
+        conversation_repo = ConversationRepo(session)
+        conversation = conversation_repo.update_status(conversation_id, "closed")
+        
+        if not conversation:
+            raise HTTPException(status_code=404, detail="Conversation not found")
+        
+        return {"success": True, "message": "Conversation closed"}
+    
+    except Exception as e:
+        logger.error(f"Error closing conversation: {e}")
         raise HTTPException(status_code=500, detail=str(e))

@@ -3,7 +3,7 @@ from sqlmodel import Session, select
 from datetime import datetime
 import json
 
-from app.db.models import Message, FAQ, Product, Order, Doc, Setting
+from app.db.models import Message, FAQ, Product, Order, Doc, Setting, Conversation
 
 
 class MessageRepo:
@@ -249,3 +249,47 @@ class SettingRepo:
             self.session.commit()
             return True
         return False
+
+
+class ConversationRepo:
+    def __init__(self, session: Session):
+        self.session = session
+    
+    def create(self, conversation: Conversation) -> Conversation:
+        self.session.add(conversation)
+        self.session.commit()
+        self.session.refresh(conversation)
+        return conversation
+    
+    def get_by_conversation_id(self, conversation_id: str) -> Optional[Conversation]:
+        statement = select(Conversation).where(Conversation.conversation_id == conversation_id)
+        return self.session.exec(statement).first()
+    
+    def get_active_conversations(self) -> List[Conversation]:
+        statement = select(Conversation).where(
+            Conversation.status.in_(["active", "escalated", "waiting_human"])
+        ).order_by(Conversation.last_activity.desc())
+        return self.session.exec(statement).all()
+    
+    def get_all_conversations(self, limit: int = 100) -> List[Conversation]:
+        statement = select(Conversation).order_by(Conversation.last_activity.desc()).limit(limit)
+        return self.session.exec(statement).all()
+    
+    def update_status(self, conversation_id: str, status: str, assigned_agent: Optional[str] = None) -> Optional[Conversation]:
+        conversation = self.get_by_conversation_id(conversation_id)
+        if conversation:
+            conversation.status = status
+            conversation.last_activity = datetime.utcnow()
+            if assigned_agent is not None:
+                conversation.assigned_agent = assigned_agent
+            if status == "escalated":
+                conversation.escalated_at = datetime.utcnow()
+            self.session.commit()
+            self.session.refresh(conversation)
+        return conversation
+    
+    def get_messages_for_conversation(self, conversation_id: str) -> List[Message]:
+        statement = select(Message).where(
+            Message.conversation_id == conversation_id
+        ).order_by(Message.created_at.asc())
+        return self.session.exec(statement).all()
